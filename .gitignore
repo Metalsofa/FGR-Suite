@@ -30,3 +30,4 @@
 *.exe
 *.out
 *.app
+/Glimmer/.vs/Glimmer/v15/Browse.VC.opendb
