@@ -16,6 +16,15 @@
     <Filter Include="Documentation">
       <UniqueIdentifier>{d0e70f2a-0bac-4ca2-9c5b-d4d24add544c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Documentation\freeglut">
+      <UniqueIdentifier>{5cb5276d-41e3-42ac-ab7f-303b9461b9d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\freeglut">
+      <UniqueIdentifier>{e82422c7-4d54-4d7a-b01a-14cb5c06d9c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Fourier">
+      <UniqueIdentifier>{e77b5f69-eba5-4e2f-adf0-1287d80f5e94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -23,14 +32,35 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fourierHeaders\crypt.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="freeglut\include\GL\freeglut.h">
+      <Filter>Header Files\freeglut</Filter>
     </ClInclude>
-    <ClInclude Include="fourierHeaders\geometry.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="freeglut\include\GL\freeglut_ext.h">
+      <Filter>Header Files\freeglut</Filter>
+    </ClInclude>
+    <ClInclude Include="freeglut\include\GL\freeglut_std.h">
+      <Filter>Header Files\freeglut</Filter>
+    </ClInclude>
+    <ClInclude Include="freeglut\include\GL\glut.h">
+      <Filter>Header Files\freeglut</Filter>
     </ClInclude>
     <ClInclude Include="fourierHeaders\graphics.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Fourier</Filter>
+    </ClInclude>
+    <ClInclude Include="fourierHeaders\crypt.h">
+      <Filter>Header Files\Fourier</Filter>
+    </ClInclude>
+    <ClInclude Include="fourierHeaders\geometry.h">
+      <Filter>Header Files\Fourier</Filter>
+    </ClInclude>
+    <ClInclude Include="fourierHeaders\customgl.h">
+      <Filter>Header Files\Fourier</Filter>
+    </ClInclude>
+    <ClInclude Include="fourierHeaders\fcolor.h">
+      <Filter>Header Files\Fourier</Filter>
+    </ClInclude>
+    <ClInclude Include="glimmerHeaders\editor.h">
+      <Filter>Header Files\Fourier</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -40,5 +70,13 @@
     <None Include="..\..\README.md">
       <Filter>Documentation</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="freeglut\Copying.txt">
+      <Filter>Documentation\freeglut</Filter>
+    </Text>
+    <Text Include="freeglut\Readme.txt">
+      <Filter>Documentation\freeglut</Filter>
+    </Text>
   </ItemGroup>
 </Project>

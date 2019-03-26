@@ -2,232 +2,138 @@
 user-friendly fgr manipulation*/
 
 #pragma once
+
 #ifndef __graphics_h__
 #define __graphics_h__
 
 #include "geometry.h"
 #include "crypt.h"
+#include "fcolor.h"
 
 #include <sstream>
 #include <string>
 #include <vector>
+#include <list>
 #include <map>
+#include <cassert>
 
 
 
-//Here we define the class metastat, which holds three values, in RGB order.
+// Enumerate glModes to make it easy to remember
+enum GLmode { glPoints, glLines, glLineLoop, glLineStrip, glTriangles,
+glTriangleStrip, glTriangleFan, glQuads, glQuadStrip, glPolygon };
 
-class metastat {
+
+// The most basic FGR type, has only form.
+class glyph : public std::list<point> {
 public:
-	int som;
-	int emo;
-	int cog;
-	metastat(int somaticValue, int emotionalValue, int cognitiveValue) {
-		som = somaticValue;
-		emo = emotionalValue;
-		cog = cognitiveValue;
+	// The GLmode by which this glyph should be rendered
+	GLmode mode;
+	// Inefficient, but just in case, allow indexing.
+	point& operator[] (std::size_t where) {
+		// Error check for out-of-bounds indexing
+		assert(where < size());
+		// Iterate to the right place;
+		iterator itr = begin();
+		for (std::size_t i = 0; i < where; ++itr, ++i);
+		return *itr;
 	}
-
-	metastat() {
-		som = 0;
-		emo = 0;
-		cog = 0;
-	}
-
-	bool operator==(const metastat& other) const {
-		return (other.som == som && other.emo == emo && other.cog == cog);
-	}
-
-	bool operator!=(const metastat& other) const {
-		return !(other == *this);
-	}
-
-	void define(int newSom, int newEmo, int newCog) {
-		som = newSom;
-		emo = newEmo;
-		cog = newCog;
-	}
-
-	//Returns the sum of all stat components
-	int sum() const{ return (som + emo + cog); }
-
-	//Returns the mean of all stat components
-	int mean() const{ return (sum() / 3); }
-
-	//1: Somatic 2: Emotional 3: Cognitive 4: Mean else: sum
-	int component(int comp) {
-		if (comp == 1)
-			return som;
-		if (comp == 2)
-			return emo;
-		if (comp == 3)
-			return cog;
-		if (comp == 4)
-			return mean();
-		else 
-			return sum();
-	}
-};
-
-
-//255 - each stat's value for 
-inline metastat inverse(metastat &base) {
-	return metastat(255-base.som, 255-base.emo, 255-base.cog);
-}
-
-
-class shape {
-public:
-	vector<point> vertices;
-	metastat color;
-	float opacity;
-	int mode;
-	float lineThickness;
-
-	//Returns the shape's encrypted string
-	string cryptogram() {
-		string translation;
-		translation = to_string(vertices.size()); ///The first argument is an integer counting the number of verticies
-		for (int i = 0; i < vertices.size(); i++) {
-			translation += " "
-				+ to_string(vertices[i].x())
-				+ " "
-				+ to_string(vertices[i].y());
+	// OPERATORS
+	// Translate this glyph positively by a certain degree
+	void operator+= (const point& org) {
+		for (iterator itr = begin(); itr != end(); itr++) {
+			*itr += org;
 		}
-		return translation + " "
-			+ to_string(color.som) + " "
-			+ to_string(color.emo) + " "
-			+ to_string(color.cog) + " "
-			+ to_string(opacity) + " "
-			+ to_string(mode) + " "
-			+ to_string(lineThickness) + " ";
 	}
-
-	//Write this shape's contents to a text file
-	void savetofile(string& filename) { //DP: Seems to be repetitive with cryptogram, just make 1 function.
-		vector<string> translation(2, "");
-		translation[0] = to_string(vertices.size()); ///The first argument is an integer counting the number of verticies
-		for (int i = 0; i < vertices.size(); i++) {
-			translation[0] += " ";
-			translation[0] += to_string(vertices[i].x());
-			translation[0] += " ";
-			translation[0] += to_string(vertices[i].y());
+	// Translate this glyph negatively, ie. set the origin
+	void operator-= (const point& org) {
+		for (iterator itr = begin(); itr != end(); itr++) {
+			*itr -= org;
 		}
-		translation[0] += " ";
-		translation[0] += to_string(color.som) + " ";
-		translation[0] += to_string(color.emo) + " ";
-		translation[0] += to_string(color.cog) + " ";
-		translation[0] += to_string(opacity) + " ";
-		translation[0] += to_string(mode) + " ";
-		translation[0] += to_string(lineThickness) + " ";
-		encryptAndOverwrite(translation, filename, "The Doors of Perception");
 	}
-
-	//Default constructor
-	shape() {
-		color = metastat(60, 60, 60);
-		opacity = 1.0f;
-		mode = 5;
-		lineThickness = 1.0f;
-	}
-
-	//Initialize a shape by reading it from a string
-	shape(string& text) {
-		///Container 0: vertices
-		stringstream reader(text);
-		int vertexcount;
-		reader >> vertexcount;
-		for (int j = 0; j < vertexcount; j++) {
-			float X; reader >> X;
-			float Y; reader >> Y;
-			point vert(X, Y);
-			vertices.push_back(vert);
+	// Scale by a different degree in each dimension
+	void operator*= (const point& scalingFactor) {
+		for (iterator itr = begin(); itr != end(); itr++) {
+			itr -> xmult(scalingFactor.x());
+			itr -> ymult(scalingFactor.y());
 		}
-		///Extract color
-		reader >> color.som; reader >> color.emo; reader >> color.cog;
-		///Extract opacity
-		reader >> opacity;
-		///Extract mode
-		reader >> mode;
-		///Extract lineThickness
-		reader >> lineThickness;
 	}
-
-	//Initialize a shape by reading it from a file, telling it where to begin reading
-	shape(string filename, int begin) { //DP: repetitive with func above
-		vector<string> shapeContents = unencryptedContents(filename, "The Doors of Perception");
-		if (shapeContents.size() >= 1) {
-			///Container 0: vertices
-			stringstream reader(shapeContents[begin]);
-			int vertexcount;
-			reader >> vertexcount;
-			for (int j = 0; j < vertexcount; j++) {
-				float X; reader >> X;
-				float Y; reader >> Y;
-				point vert(X, Y);
-				vertices.push_back(vert);
-			}
-			///Extract color
-			reader >> color.som; reader >> color.emo; reader >> color.cog;
-			///Extract opacity
-			reader >> opacity;
-			///Extract mode
-			reader >> mode;
-			///Extract lineThickness
-			reader >> lineThickness;
+	// Scale while maintaining the aspect ratio
+	void operator*= (float scalingFactor) {
+		for (iterator itr = begin(); itr != end(); itr++) {
+			*itr *= scalingFactor;
 		}
 	}
 	//Translate every vertex relative to the origin
 	void setOrigin(point org) {
-		for (int i = 0; i < vertices.size(); i++) {
-			vertices[i] = difference(vertices[i], org);
+		for (iterator itr = begin(); itr != end(); itr++) {
+			*itr -= org;
 		}
 	}
 	//Scale this shape around the origin
 	void rescale(float scalingFactor) {
-		for (unsigned long i = 0; i < vertices.size(); i++) {
-			vertices[i] *= scalingFactor;
+		*this *= scalingFactor;
+	}
+	//Apply a function to every point in the list
+	void applyToAll(void(*transformFunc)(point&)) {
+		for (iterator itr = begin(); itr != end(); ++itr) {
+			transformFunc(*itr);
 		}
 	}
+	//Apply a function to every point in the list
+	void applyToAll(void(*transformFunc)(const point&)) const {
+		for (const_iterator itr = begin(); itr != end(); ++itr) {
+			transformFunc(*itr);
+		}
+	}
+};
+
+// More commonly used than the glyph, the shape has color and a few other aspects
+class shape : public glyph {
+public:
+	// REPRESENTATION
+	fcolor color;
+	float lineThickness;
+	float pointSize;
 	//Scale this shape strictly in the x-dimension around the origin
 	void rescaleX(float scalingFactor) {
-		for (unsigned long i = 0; i < vertices.size(); i++) {
-			vertices[i].xmult(scalingFactor);
+		for (iterator itr = begin(); itr != end(); itr++) {
+			itr->xmult(scalingFactor);
 		}
 	}
 	//Scale this shape strictly in the y-dimension around the origin
 	void rescaleY(float scalingFactor) {
-		for (unsigned long i = 0; i < vertices.size(); i++) {
-			vertices[i].ymult(scalingFactor);
+		for (iterator itr = begin(); itr != end(); itr++) {
+			itr->ymult(scalingFactor);
 		}
 	}
 	//Returns the diagonally-spanning segment for this shape
 	const segment bounds() const {
-		segment rets = segment(vertices[0], vertices[1]);
+		segment rets = segment(front(), *(++begin()));
 		//Iterate through every point and set the bounding segment accordingly
-		for (unsigned int i = 0; i < vertices.size(); i++) {
+		for (const_iterator itr = begin(); itr != end(); itr++) {
 			//Check rightbounds
-			if (vertices[i].x() > rets.p2.x()) {
-				rets.p2.x(vertices[i].x());
+			if (itr -> x() > rets.p2.x()) {
+				rets.p2.x(itr -> x());
 			}
 			//Check topbounds
-			if (vertices[i].y() > rets.p2.y()) {
-				rets.p2.y(vertices[i].y());
+			if (itr -> y() > rets.p2.y()) {
+				rets.p2.y(itr -> y());
 			}
 			//Check leftbounds
-			if (vertices[i].x() < rets.p1.x()) {
-				rets.p1.x(vertices[i].x());
+			if (itr -> x() < rets.p1.x()) {
+				rets.p1.x(itr -> x());
 			}
 			//Check bottombounds
-			if (vertices[i].y() < rets.p1.y()) {
-				rets.p1.y(vertices[i].y());
+			if (itr -> y() < rets.p1.y()) {
+				rets.p1.y(itr -> y());
 			}
 		}
 		//Now rets is the bounding segment for this shape!
 		return rets;
 	}
 	//Returns the name of the GL drawing mode associated with this shape
-	string getGLMODE() {
+	string getGLMODE() const {
 		switch (mode % 10) {
 		case 0:
 			return "GL_POINTS";
@@ -255,50 +161,68 @@ public:
 	}
 };
 
-class graphic {
+//Unlike a shape, a graphic has multiple layers
+class graphic : public std::vector<shape> {
 public:
-	vector<shape> pieces; //This alone gives the graphic form.
-	int delay = 0; //Optional member, only useful if this graphic is in an animation.
-
-	//Set the origin for this graphic
-	void setOrigin(point org) {
-		for (int i = 0; i < pieces.size(); i++) {
-			pieces[i].setOrigin(org);
+	//Apply a function to every shape in the graphic
+	void applyToAll(void(*transformFunc)(shape&)) {
+		for (iterator itr = begin(); itr != end(); ++itr) {
+			transformFunc(*itr);
 		}
 	}
-
+	//Apply a function to every point in every shape in the graphic
+	void applyToAll(void(*transformFunc)(point&)) {
+		for (iterator itr = begin(); itr != end(); ++itr) {
+			itr -> applyToAll(transformFunc);
+		}
+	}
+	//Apply a function to every shape in the graphic
+	void applyToAll(void(*transformFunc)(const shape&)) const {
+		for (const_iterator itr = begin(); itr != end(); ++itr) {
+			transformFunc(*itr);
+		}
+	}
+	//Apply a function to every point in every shape in the graphic
+	void applyToAll(void(*transformFunc)(const point&)) const {
+		for (const_iterator itr = begin(); itr != end(); ++itr) {
+			itr -> applyToAll(transformFunc);
+		}
+	}
+	//Set the origin for this graphic
+	void setOrigin(point org) {
+		for (iterator itr = begin(); itr != end(); itr++) {
+			itr -> setOrigin(org);
+		}
+	}
 	//Rescale this graphic about the origin 
 	void rescale(float scalingFactor) {
 		//Iterate through this graphic's component shapes and rescale each one
-		for (unsigned long i = 0; i < pieces.size(); i++) {
-			pieces[i].rescale(scalingFactor);
+		for (iterator itr = begin(); itr != end(); itr++) {
+			itr -> rescale(scalingFactor);
 		}
 	}
-
 	//Rescale this graphic only in the x-dimension about the origin
 	void rescaleX(float scalingFactor) {
 		//Iterate through this graphic's component shapes and rescale each one
-		for (unsigned long i = 0; i < pieces.size(); i++) {
-			pieces[i].rescaleX(scalingFactor);
+		for (iterator itr = begin(); itr != end(); itr++) {
+			itr -> rescaleX(scalingFactor);
 		}
 	}
-
 	//Rescale this graphic only in the y-dimension about the origin
 	void rescaleY(float scalingFactor) {
 		//Iterate through this graphic's component shapes and rescale each one
-		for (unsigned long i = 0; i < pieces.size(); i++) {
-			pieces[i].rescaleY(scalingFactor);
+		for (iterator itr = begin(); itr != end(); itr++) {
+			itr -> rescaleY(scalingFactor);
 		}
 	}
-
 	//Get this graphic's bounding box
 	const segment bounds() {
 		//Declare the segment to be returned
-		segment rets = pieces[0].bounds();
+		segment rets = front().bounds();
 		//Use each shape's bounding box to find this shape's bounding box!
-		for (unsigned int i = 0; i < pieces.size(); i++) {
+		for (iterator itr = begin(); itr != end(); itr++) {
 			//This way we don't have to keep calling 'bounds'
-			const segment checker = pieces[i].bounds();
+			const segment checker = itr -> bounds();
 			//Check rightbounds
 			if (checker.p2.x() > rets.p2.x()) {
 				rets.p2.x(checker.p2.x());
@@ -319,7 +243,6 @@ public:
 		//Return the augmented segment
 		return rets;
 	}
-
 	//Squeezes this graphic between the lines y = 0 and y = 1, making it the standard width for one of these graphics
 	void standardize() {
 		//Make this graphic flush with the x and y axes
@@ -327,7 +250,6 @@ public:
 		//Rescale this graphic to be flush with y = 1
 		rescale(1 / (bounds().p2.x()));
 	}
-
 	//Fit this object to a new bounding box, breaking aspect ratio as neccessary
 	void fitStretch(segment newBounds) {
 		//These calculatoins all work best from the origin point
@@ -338,7 +260,6 @@ public:
 		rescaleY(newBounds.p2.y());
 		setOrigin(newBounds.p1 * -1.0f);
 	}
-
 	//Fit this object within a new bounding box without breaking the aspect ratio
 	void fitWithin(segment newBounds) {
 		//These calculatoins all work best from the origin point
@@ -356,7 +277,6 @@ public:
 		//Finally, move the graphic to where it belongs
 		setOrigin(newBounds.midpoint() * -1.0f);
 	}
-
 	//Fit this object to fill a new bounding box without breaking the aspect ratio
 	void fitWithout(segment newBounds) {
 		//These calculatoins all work best from the origin point
@@ -374,93 +294,91 @@ public:
 		//Finally, move the graphic to where it belongs
 		setOrigin(newBounds.midpoint() * -1.0f);
 	}
-
 	//Default constructor
 	graphic() {
-		pieces.push_back(shape());
+		push_back(shape());
 	}
+};
 
-	//Initialize this graphic from a file
-	graphic(string filename) {
-		vector<string> contents = unencryptedContents(filename, "The Doors of Perception");
-		for (string& line : contents) {
-			pieces.push_back(shape(line));
-		}
-	}
-
-	//Save this graphic to a file
-	void savetofile(string filename) {
-		vector<string> lines;
-		for (shape& piece : pieces) {
-			lines.push_back(piece.cryptogram());
-		}
-		encryptAndOverwrite(lines, filename, "The Doors of Perception");
-	}
-
-	//Translate this graphic into a string
-	string filestring() {
-		vector<string> sublines;
-		for (unsigned int i = 0; i < pieces.size(); i++) {
-			sublines.push_back(pieces[i].cryptogram());
-		}
-		string rets = "{\n";
-		for (unsigned int i = 0; i < sublines.size(); i++) {
-			rets += "\t\t" + sublines[i] + ";\n";
-		}
-		rets.push_back('\t');
-		rets.push_back('}');
-		return rets;
+// Like a graphic, but meant to be used in animations
+class frame : public graphic {
+public:
+	// How long should this frame stick around past one frame?
+	int delay;
+	//Default constructor (delay of 0.5 seconds)
+	frame() : graphic() {
+		delay = 0;
 	}
 };
 
 /*Structures multiple graphics into an animated sprite*/
-class animation {
+class animation : public std::vector<frame> {
 public:
-	vector<graphic> frames;
-	int framenumber; //Dynamic, meant for cycling through frames
+	// REPRESENATION
+	iterator currentframe; //Dynamic, meant for cycling through frames
 	int frameclock; //Dynamic, meant for counting how long it's been on this frame.
 	bool cycle; //Should this animation restart after it ends?
-
+	// Default constructor
 	animation() {
-		framenumber = 0;
+		push_back(frame());
+		currentframe = begin();
 		frameclock = 0;
 		cycle = true;
-		frames.push_back(graphic());
 	}
-
-	graphic& operator[] (int frame) {
-		return frames[frame];
+	const graphic& feed() {
+		const graphic& ret = *currentframe;
+		tick();
+		return ret;
 	}
-
+	// Advance the frameclock by one, advancing if neccesary
 	void tick() {
-		if (frameclock < frames[framenumber].delay) {
+		if (frameclock < currentframe -> delay) {
 			frameclock++;
 		}
 		else {
 			frameclock = 0;
-			if (framenumber < frames.size() - 1)
-				framenumber++;
+			if (currentframe != end())
+				currentframe++;
 			else if (cycle) {
-				framenumber = 0;
+				currentframe = begin();
 			}
 		}
 	}
-	//Translate this animation to an (unencrypted) string
-	string filestring() {
-		vector<string> graphica;
-		for (unsigned int i = 0; i < frames.size(); i++) {
-			graphica.push_back(frames[i].filestring());
+	//Apply a function to every frame in the animation
+	void applyToAll(void(*transformFunc)(frame&)) {
+		for (iterator itr = begin(); itr != end(); ++itr) {
+			transformFunc(*itr);
 		}
-		string rets = "{\n";
-		for (unsigned int i = 0; i < graphica.size(); i++) {
-			rets += "\t" + graphica[i] + '\n';
-		}
-		rets.push_back('}');
 	}
-
-	//Translate an unencrypted string into an animation
-	animation(string fstring) {
-
+	//Apply a function to every shape in every frame in the animation
+	void applyToAll(void(*transformFunc)(shape&)) {
+		for (iterator itr = begin(); itr != end(); ++itr) {
+			itr -> applyToAll(transformFunc);
+		}
+	}
+	//Apply a function to every point in every shape in every frame in the animation
+	void applyToAll(void(*transformFunc)(point&)) {
+		for (iterator itr = begin(); itr != end(); ++itr) {
+			itr->applyToAll(transformFunc);
+		}
+	}
+	//Apply a function to every frame in the animation
+	void applyToAll(void(*transformFunc)(const frame&)) const {
+		for (const_iterator itr = begin(); itr != end(); ++itr) {
+			transformFunc(*itr);
+		}
+	}
+	//Apply a function to every shape in every frame in the animation
+	void applyToAll(void(*transformFunc)(const shape&)) const {
+		for (const_iterator itr = begin(); itr != end(); ++itr) {
+			itr -> applyToAll(transformFunc);
+		}
+	}
+	//Apply a function to every point in every shape in every frame in the animation
+	void applyToAll(void(*transformFunc)(const point&)) const {
+		for (const_iterator itr = begin(); itr != end(); ++itr) {
+			itr -> applyToAll(transformFunc);
+		}
 	}
 };
 
@@ -471,11 +389,6 @@ public:
 	map<string, animation> animations;
 	map<string, graphic> graphics;
 
-	//Translate this entire spritesheet into a big (unencrypted) string
-	string cryptogram() {
-		/*Uh oh I have no Idea how to iterate through maps*/
-		
-	}
 };
 
 #endif

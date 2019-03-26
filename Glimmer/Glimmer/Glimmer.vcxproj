@@ -72,15 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fourierHeaders;C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\include;C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fourierHeaders;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fourierHeaders;C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\include;C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fourierHeaders;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -95,6 +103,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,6 +119,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -129,6 +139,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,6 +159,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -155,12 +167,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fourierHeaders\crypt.h" />
+    <ClInclude Include="fourierHeaders\customgl.h" />
+    <ClInclude Include="fourierHeaders\fcolor.h" />
     <ClInclude Include="fourierHeaders\geometry.h" />
     <ClInclude Include="fourierHeaders\graphics.h" />
+    <ClInclude Include="freeglut\include\GL\freeglut.h" />
+    <ClInclude Include="freeglut\include\GL\freeglut_ext.h" />
+    <ClInclude Include="freeglut\include\GL\freeglut_std.h" />
+    <ClInclude Include="freeglut\include\GL\glut.h" />
+    <ClInclude Include="glimmerHeaders\editor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE" />
     <None Include="..\..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="freeglut\Copying.txt" />
+    <Text Include="freeglut\Readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
