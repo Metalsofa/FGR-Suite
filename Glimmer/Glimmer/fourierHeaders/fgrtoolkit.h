@@ -393,6 +393,13 @@ public:
 		frameclock = 0;
 		cycle = true;
 	}
+	// Construct from an animation container type
+	animation(bool cycle_, animationContainer framedata) : animationContainer(framedata) {
+		currentframe = begin();
+		frameclock = 0;
+		cycle = cycle_;
+	}
+	// Return the graphic at the current frame, and advance the cloc
 	const graphic& feed() {
 		const graphic& ret = *currentframe;
 		tick();

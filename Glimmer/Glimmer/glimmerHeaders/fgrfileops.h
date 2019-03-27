@@ -35,10 +35,10 @@ point fgetpoint(FILE*& stream) {
 must be specified for reading in an individual instance of said class */
 template <class entry, class container>
 container fgetcontainer(FILE*& stream, entry(*fgetfunc)(FILE*&)) {
-	//Load in the object count
+	//Read in the object count
 	std::size_t objc;
 	fread(&objc, sizeof(std::size_t), 1, stream);
-	//Load in the container and fill it up
+	//Read in the container and fill it up
 	container retc;
 	for (std::size_t i = 0; i < objc; ++i) {
 		retc.push_back(fgetfunc(stream));
@@ -94,12 +94,12 @@ fcolor fgetfcolor(FILE*& stream) {
 
 //Get a shape from a file stream
 shape fgetshape(FILE*& stream) {
-	//Load in the fcolor
+	//Read in the fcolor
 	fcolor color = fgetfcolor(stream);
-	//Load in the linethickness and pointsize
+	//Read in the linethickness and pointsize
 	float weightdata [2];
 	fread(weightdata, sizeof(float), 2, stream);
-	//Load in the point data
+	//Read in the point data
 	glyph pointdata = fgetglyph(stream);
 	//Construct and return the shape
 	return shape(pointdata, color, weightdata[0], weightdata[1]);
@@ -114,10 +114,10 @@ shape fgetshape(FILE*& stream) {
 
 //Get a shape from a file stream
 graphic fgetgraphic(FILE*& stream) {
-	//Load in the size type
+	//Read in the size type
 	std::size_t shapecount;
 	fread(&shapecount, sizeof(std::size_t), 1, stream);
-	//Load in the shapes
+	//Read in the shapes
 	graphicContainer shapedata;
 	for (std::size_t i = 0; i < shapecount; ++i) {
 		shapedata.push_back(fgetshape(stream));
@@ -135,25 +135,113 @@ graphic fgetgraphic(FILE*& stream) {
 
 //Get a frame of an animtion from a file stream
 frame fgetframe(FILE*& stream) {
-	//Load in the delay
+	//Read in the delay
 	int delay;
 	fread(&delay, sizeof(int), 1, stream);
-	//Load in the graphic, construct and return the frame
+	//Read in the graphic, construct and return the frame
 	return frame(delay, fgetgraphic(stream));
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////
-//		FRAME BINARY STRUCTURE
+//		ANIMATION BINARY STRUCTURE
 //
-//	| INT DELAY | <GRAPHIC> |
+//	| BOOL CYCLE | STD::SIZE_T FRAMECOUNT | <FRAMES> |
 //
 
 //Get an animation from a file stream
 animation fgetanimation(FILE*& stream) {
-	//The animation class isn't complete yet
+	//Read in 'cycle'
+	bool cycle;
+	fread(&cycle, sizeof(bool), 1, stream);
+	//Read in the number of frames
+	std::size_t framec;
+	fread(&framec, sizeof(std::size_t), 1, stream);
+	//Read in all the frames
+	animationContainer frameData;
+	for (std::size_t i = 0; i < framec; ++i) {
+		frameData.push_back(fgetframe(stream));
+	}
+	return animation(cycle, frameData);
 }
 
+
+////////// FILE WRITING OPERATIONS //////////
+
+//Put a point into a filestream, and advance the internal position indicator by that many bytes
+void fputpoint(const point& obj, FILE*& stream) {
+	//This is the point that will be returned
+	float buffer[2] = { obj.x(), obj.y };
+	fwrite(buffer, sizeof(float), 2, stream);
+}
+
+//Put a glyph into a file stream
+void fputglyph(const glyph& obj, FILE*& stream) {
+	//Write in the GLmode of this glyph
+	fwrite(&obj.mode, sizeof(GLmode), 1, stream);
+	//Write in the number of points in the glyph
+	std::size_t POINTC = obj.size();
+	fwrite(&POINTC, sizeof(std::size_t), 1, stream);
+	//Write in every point, one at a time
+	glyphContainer pointData;
+	for (glyphContainer::const_iterator itr = pointData.begin(); itr != pointData.end(); ++itr) {
+		fputpoint(*itr, stream);
+	}
+}
+
+//Put an fcolor into a file stream
+void fputfcolor(const fcolor& col, FILE*& stream) {
+	//Write in the colors
+	float input[4] = { col.getLevel('r'), col.getLevel('g'), col.getLevel('b'), col.getLevel('a') };
+	fwrite(input, sizeof(float), 4, stream);
+}
+
+//Put a shape into a file stream
+void fputshape(const shape& obj, FILE*& stream) {
+	//Write in the fcolor
+	fputfcolor(obj.color, stream);
+	//Write in the linethickness and pointsize
+	float weightdata[2] = { obj.lineThickness, obj.pointSize };
+	fwrite(weightdata, sizeof(float), 2, stream);
+	//Write in the point data
+	fputglyph(obj, stream);
+}
+
+//Put a graphic into a file stream
+void fputgraphic(const graphic& obj, FILE*& stream) {
+	//Write in the size type
+	std::size_t shapecount = obj.size();
+	fwrite(&shapecount, sizeof(std::size_t), 1, stream);
+	//Write in the shapes
+	for (graphicContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
+		fputshape(*itr, stream);
+	}
+}
+
+
+//Put a frame of an animtion into a file stream
+void fputframe(const frame& obj, FILE*& stream) {
+	//Write in the delay
+	int delay;
+	fwrite(&delay, sizeof(int), 1, stream);
+	//Write in the graphic, construct and return the frame
+	fputgraphic(obj, stream);
+}
+
+//Put an animation into a file stream
+void fputanimation(const animation& obj, FILE*& stream) {
+	//Write in 'cycle'
+	bool cycle = obj.cycle;
+	fwrite(&cycle, sizeof(bool), 1, stream);
+	//Write in the number of frames
+	std::size_t framec = obj.size();
+	fwrite(&framec, sizeof(std::size_t), 1, stream);
+	//Write in all the frames
+	animationContainer frameData;
+	for (animationContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
+		fputframe(*itr, stream);
+	}
+}
 
 
 #endif
