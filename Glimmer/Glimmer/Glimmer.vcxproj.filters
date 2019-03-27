@@ -44,9 +44,6 @@
     <ClInclude Include="freeglut\include\GL\glut.h">
       <Filter>Header Files\freeglut</Filter>
     </ClInclude>
-    <ClInclude Include="fourierHeaders\graphics.h">
-      <Filter>Header Files\Fourier</Filter>
-    </ClInclude>
     <ClInclude Include="fourierHeaders\crypt.h">
       <Filter>Header Files\Fourier</Filter>
     </ClInclude>
@@ -61,6 +58,12 @@
     </ClInclude>
     <ClInclude Include="glimmerHeaders\editor.h">
       <Filter>Header Files\Fourier</Filter>
+    </ClInclude>
+    <ClInclude Include="fourierHeaders\fgrtoolkit.h">
+      <Filter>Header Files\Fourier</Filter>
+    </ClInclude>
+    <ClInclude Include="glimmerHeaders\fgrfileops.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

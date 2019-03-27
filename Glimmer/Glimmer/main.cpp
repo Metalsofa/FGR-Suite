@@ -4,21 +4,25 @@
 #include "geometry.h"
 #include "crypt.h"
 #include "gl/glut.h"
-#include "graphics.h"
+#include "fgrtoolkit.h"
 #include "customgl.h"
+#include "editor.h"
 
 //STL/etc. includes
 #include <Windows.h>
 #include <cmath>
 #include <stdlib.h>
 #include <string>
-#include <map>
 #include <time.h>
 #include <vector>
 
-using namespace std;
 
 //Some global variables
+//The location on the computer where this session takes place
+std::string sessionFilePath;
+//Every editor is in this vector
+std::vector<editor> tabs;
+
 
 //Contains all gl-code; there should be no need to have any outside of this function
 void renderScene(void) {
