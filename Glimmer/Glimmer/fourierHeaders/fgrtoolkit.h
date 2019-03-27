@@ -29,7 +29,7 @@ class graphic;
 class frame;
 class animation;
 class spritesheet;
-
+//Container typedefs
 typedef std::list<point> glyphContainer;
 typedef std::vector<shape> graphicContainer;
 typedef std::vector<frame> animationContainer;
@@ -348,6 +348,10 @@ public:
 	graphic() : graphicContainer() {
 		push_back(shape());
 	}
+	//Construct from a graphicContrainer
+	graphic(const graphicContainer& shapedata) : graphicContainer(shapedata) {
+		
+	}
 };
 
 // Like a graphic, but meant to be used in animations
@@ -363,6 +367,10 @@ public:
 	//Default constructor (delay of 0.5 seconds)
 	frame() : graphic() {
 		delay = 0;
+	}
+	//Construct from delay and graphic
+	frame(int del, graphic body) : graphic(body) {
+		delay = del;
 	}
 };
 
@@ -446,6 +454,7 @@ public:
 //To be included as a member in animated objects
 class spritesheet {
 public:
+	//Internal representation
 	map<string, animation> animations;
 	map<string, graphic> graphics;
 
