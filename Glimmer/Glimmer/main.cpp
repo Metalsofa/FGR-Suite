@@ -96,74 +96,83 @@ void display() {
 }
 
 /* Main function: GLUT runs as a console application starting at main()  */ // Taken from https://www.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html
-int main(int argc, char** argv) {
-	glutInit(&argc, argv);          // Initialize GLUT
-	glutCreateWindow("Vertex, Primitive & Color");  // Create window with the given title
-	glutInitWindowSize(320, 320);   // Set the window's initial width & height
-	glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
-	glutDisplayFunc(display);       // Register callback handler for window re-paint event
-	initGL();                       // Our own OpenGL initialization
-	glutMainLoop();                 // Enter the event-processing loop
-	return 0;
-}
-
-
-////Contains all gl-code; there should be no need to have any outside of this function
-//void renderScene(void) {
-//	//Screen-cleanup
-//	// Clear Color and Depth Buffers
-//	ClearScreen();
-//	// Reset transformations
-//	glLoadIdentity();
-//
-//	///////////////////////// DRAWING INSTRUCTIONS ////////////////////////////
-//	//Temprorary test instructions: Draw a single triangle
-//	glBegin(GL_TRIANGLES);
-//	glVertex2f(0.0f, 0.0f);
-//	glVertex2f(10.0f, 0.0f);
-//	glVertex2f(0.0f, 10.0f);
-//	glEnd();
-//
-//	//This is the function that refreshes the canvas and implements everything we've 'drawn'
-//	glutSwapBuffers();
-//}
-
-//main function; exists to set up a few things and then enter the glut-main-loop
 //int main(int argc, char** argv) {
-//	//Command line args:
-//
-//	//Initialize GLUT
-//	glutInit(&argc, argv);
-//
-//	//Choose some settings for our Window
-//	glutInitWindowPosition(100, 100);
-//	glutInitWindowSize(900, 500);
-//	//glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-//
-//	//Create the Window
-//	glutCreateWindow("Glimmer");
-//
-//	//Some settings
-//	glutIgnoreKeyRepeat(1);
-//	//glutSetCursor(GLUT_CURSOR_NONE); //Hide the cursor
-//
-//	// Display callbacks
-//	glutDisplayFunc(display); //Callback for when we refresh
-//	glutReshapeFunc(changeSize); //Callback for when window is resized
-//
-//	// Control callbacks
-//	//glutKeyboardFunc(ProcessNormalKeys); //Callback pressing a "normal" key
-//	//glutSpecialFunc(ProcessSpecialKeys); //Callback for a "special" key
-//	//glutKeyboardUpFunc(ReleaseNormalKeys); //Callback for releasing "normal" keys
-//	//glutSpecialUpFunc(ReleaseSpecialKeys); //Callback for releasing special keys
-//	//glutMouseFunc(MouseClick); //Callback for mouse clicks
-//	//glutMotionFunc(PassiveMouseMove); //Callback for mouse movement with button down
-//	//glutPassiveMotionFunc(PassiveMouseMove); //Callback for mouse movement with no button down
-//
-//	initGL();
-//	
-//	//enter GLUT event processing cycle
-//	glutMainLoop();
-//
+//	glutInit(&argc, argv);          // Initialize GLUT
+//	glutCreateWindow("Vertex, Primitive & Color");  // Create window with the given title
+//	glutInitWindowSize(320, 320);   // Set the window's initial width & height
+//	glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
+//	glutDisplayFunc(display);       // Register callback handler for window re-paint event
+//	initGL();                       // Our own OpenGL initialization
+//	glutMainLoop();                 // Enter the event-processing loop
 //	return 0;
 //}
+
+
+//Contains all gl-code; there should be no need to have any outside of this function
+void renderScene(void) {
+	//Screen-cleanup
+	// Clear Color and Depth Buffers
+	ClearScreen();
+	// Reset transformations
+	glLoadIdentity();
+
+	///////////////////////// DRAWING INSTRUCTIONS ////////////////////////////
+	//Temprorary test instructions: Draw a single triangle
+	glBegin(GL_TRIANGLES);
+	glVertex2f(0.0f, 0.0f);
+	glVertex2f(10.0f, 0.0f);
+	glVertex2f(0.0f, 10.0f);
+	glEnd();
+
+	//This is the function that refreshes the canvas and implements everything we've 'drawn'
+	glutSwapBuffers();
+}
+
+//main function; exists to set up a few things and then enter the glut-main-loop
+int main(int argc, char** argv) {
+	//Command line args:
+
+	//Initialize GLUT
+	glutInit(&argc, argv);
+
+	////Choose some settings for our Window
+	glutInitWindowPosition(100, 100);
+	glutInitWindowSize(900, 500);
+	//glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+
+	////Create the Window
+	glutCreateWindow("Glimmer");
+
+	////Some settings
+	//glutIgnoreKeyRepeat(1);
+	////glutSetCursor(GLUT_CURSOR_NONE); //Hide the cursor
+
+	//// Display callbacks
+	glutDisplayFunc(display); //Callback for when we refresh
+	glutReshapeFunc(changeSize); //Callback for when window is resized
+
+	//// Control callbacks
+	////glutKeyboardFunc(ProcessNormalKeys); //Callback pressing a "normal" key
+	////glutSpecialFunc(ProcessSpecialKeys); //Callback for a "special" key
+	////glutKeyboardUpFunc(ReleaseNormalKeys); //Callback for releasing "normal" keys
+	////glutSpecialUpFunc(ReleaseSpecialKeys); //Callback for releasing special keys
+	////glutMouseFunc(MouseClick); //Callback for mouse clicks
+	////glutMotionFunc(PassiveMouseMove); //Callback for mouse movement with button down
+	////glutPassiveMotionFunc(PassiveMouseMove); //Callback for mouse movement with no button down
+
+	//initGL();
+	//
+	////enter GLUT event processing cycle
+	//glutMainLoop();
+	
+	//glutInit(&argc, argv);          // Initialize GLUT
+	//glutCreateWindow("Vertex, Primitive & Color");  // Create window with the given title
+	//glutInitWindowSize(320, 320);   // Set the window's initial width & height
+	//glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
+	//glutDisplayFunc(display);       // Register callback handler for window re-paint event
+	initGL();                       // Our own OpenGL initialization
+	glutMainLoop();                 // Enter the event-processing loop
+
+
+	return 0;
+}

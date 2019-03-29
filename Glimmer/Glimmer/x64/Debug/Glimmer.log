@@ -1,2 +1,1 @@
-﻿  main.cpp
-  Glimmer.vcxproj -> C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe
+﻿LINK : fatal error LNK1168: cannot open C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe for writing
