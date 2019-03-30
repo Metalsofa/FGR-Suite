@@ -6,6 +6,10 @@
 
 #include "fcolor.h"
 
+//Global variables to help keep track of window size
+GLsizei windowHeight;
+GLsizei windowWidth;
+
 void setcolor(const fcolor& col) {
 	glColor4f(col.getLevel('r'), col.getLevel('g'), col.getLevel('b'), col.getLevel('a'));
 }
@@ -235,18 +239,18 @@ void ClearScreen() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 /////////////////////WARNING: MOSTLY BORING STUFF AFTER THIS LINE/////////////////////////
 
 void changeSize(int width, int height) {
+	windowHeight = height;
+	windowWidth = width;
 	//To avoid divide by zero:
 	if (height == 0)
 		height = 1;
 	float ratio = 1.0f * width / height;
-	////Use the Projection Matrix
-	//glMatrixMode(GL_PROJECTION);
-	////Reset Matrix
+	//Use the Projection Matrix
+	glMatrixMode(GL_PROJECTION);
+	//Reset Matrix
 	glLoadIdentity();
-	////Set viewport to be the entire window
-	//glViewport(0, 0, width, height);
-	////Set the correct perspective
-	//gluPerspective(45, ratio, 1, 100);
+	//Set viewport to be the entire window
+	glViewport(0, 0, width, height);
 	////Get back to the modelview
 	glMatrixMode(GL_MODELVIEW);
 }
