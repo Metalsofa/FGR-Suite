@@ -172,7 +172,7 @@ public:
 		glyphGLModeColor = fcolor(0.6f, 0.6f, 0.6f);
 		toolsColor = fcolor(0.3f, 0.3f, 0.3f);
 		//Default sizes
-		commandLineHeight = 30;
+		commandLineHeight = 22;
 		fileTreeWidth = 200;
 		tabHeaderHeight = 50;
 		animationFramesWidth = 100;
@@ -283,6 +283,11 @@ void drawEditor(const editor& workbench) {
 		setcolor(workbench.commandLineColor);
 		setViewport(workbench.fileTreePane());
 		fullScreenQuad();
+		glPushMatrix();
+		glColor3f(1.0f, 1.0f, 1.0f);
+		for (char c : "CONSOLE")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+		glPopMatrix();
 	}
 	//Draw the File Tree
 	if (workbench.showFileTree) {
