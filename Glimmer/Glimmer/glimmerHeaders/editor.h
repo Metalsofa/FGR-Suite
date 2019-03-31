@@ -84,6 +84,10 @@ public:
 	//Pointer to the animation this editor has open
 	animation* animArt;
 	// Settings as to whether different editor panes are open, and their sizes when open
+	//COMMAND LINE (BOTTOM)
+		bool showCommandLine;
+		GLint commandLineHeight;
+		fcolor commandLineColor;
 	//FILE TREE (RIGHT)
 		bool showFileTree;
 		GLint fileTreeWidth;
@@ -150,53 +154,71 @@ public:
 	void configureLayout(editortype format_);
 	//Set settings to their defaults
 	void defaultSettings() {
+		//Default booleans
 		showFileTree = true;
 		showTabHeader = true;
 		showGlyphGLMode = true;
 		showTools = true;
+		showCommandLine = true;
+		//Default colors
+		commandLineColor = fcolor(0.0f, 0.0f, 0.0f);
+		fileTreeColor = fcolor(0.2f, 0.2f, 0.2f);
+		tabHeaderColor = fcolor(0.7f, 0.7f, 0.7f);
+		animationFramesColor = fcolor(0.3f, 0.3f, 0.3f);
+		layersColor = fcolor(0.4f, 0.4f, 0.4f);
+		shapesColor = fcolor(0.3f, 0.3f, 0.3f);
+		shapeColorColor = fcolor(0.5f, 0.5f, 0.5f);
+		shapeSpecificationsColor = fcolor(0.4f, 0.4f, 0.4f);
+		glyphGLModeColor = fcolor(0.6f, 0.6f, 0.6f);
+		toolsColor = fcolor(0.3f, 0.3f, 0.3f);
 		//Default sizes
-		fileTreeWidth = 100;
-		tabHeaderHeight = 100;
+		commandLineHeight = 30;
+		fileTreeWidth = 200;
+		tabHeaderHeight = 50;
 		animationFramesWidth = 100;
 		layersWidth = 100;
 		shapesWidth = 100;
 		shapePropertiesHeight = 100;
 		shapeColorWidth = 100;
-		glyphGLModeHeight = 100;
+		glyphGLModeHeight = 30;
 		toolsWidth = 100;
 	}
 	// The following functions are meant to provide information about the layout
+	//Bottom-side command line interface
+	viewport commandLinePane() const {
+		return viewport(superWindowPane().left(), superWindowPane().bottom(), superWindowPane().right(), commandLineHeight, showCommandLine);
+	}
 	//Right-hand side file-tree display
 	viewport fileTreePane() const {
-		return viewport(superWindowPane().right() - fileTreeWidth, 0, fileTreeWidth, superWindowPane().height, showFileTree);
+		return viewport(superWindowPane().right() - fileTreeWidth, commandLinePane().top(), fileTreeWidth, superWindowPane().top() - commandLinePane().top(), showFileTree);
 	}
 	//Top-side editor open tabs display
 	viewport tabHeaderPane() const {
-		return viewport(0, superWindowPane().top() - tabHeaderHeight, superWindowPane().width, tabHeaderHeight, showTabHeader);
+		return viewport(superWindowPane().left(), superWindowPane().top() - tabHeaderHeight, fileTreePane().left(), tabHeaderHeight, showTabHeader);
 	}
 	//Left-hand side animation frames display
 	viewport animationFramesPane() const {
-		return viewport(0, 0, animationFramesWidth, superWindowPane().height, showAnimationFrames);
+		return viewport(superWindowPane().left(), commandLinePane().top(), animationFramesWidth, tabHeaderPane().bottom() - commandLinePane().top(), showAnimationFrames);
 	}
 	//Left-hand side layers display
 	viewport layersPane() const {
-		return viewport(animationFramesPane().right(), 0, layersWidth, superWindowPane().height, showLayers);
+		return viewport(animationFramesPane().right(), commandLinePane().top(), layersWidth, animationFramesPane().top() - commandLinePane().top(), showLayers);
 	}
 	//Left-hand side shapes display
 	viewport shapesPane() const {
-		return viewport(layersPane().right(), 0, shapesWidth, superWindowPane().height, showShapes);
+		return viewport(layersPane().right(), commandLinePane().top(), shapesWidth, animationFramesPane().top() - commandLinePane().top(), showShapes);
 	}
 	//Bottom-side shape-properties display; contains two other panes
 	viewport shapePropertiesPane() const {
-		return viewport(shapesPane().right(), 0, fileTreePane().left() - shapesPane().right(), shapePropertiesHeight, showShapeProperties);
+		return viewport(shapesPane().right(), commandLinePane().top(), fileTreePane().left() - shapesPane().right(), shapePropertiesHeight, showShapeProperties);
 	}
 	//Part of the shape-properties display: line thickness and point size
 	viewport shapeSpecificationsPane() const {
-		return viewport(shapeColorPane().right(), 0, shapePropertiesPane().width - shapeColorPane().width, shapePropertiesPane().height, showShapeProperties);
+		return viewport(shapeColorPane().right(), commandLinePane().top(), shapePropertiesPane().width - shapeColorPane().width, shapePropertiesPane().height, showShapeProperties);
 	}
 	//Part of the shape-properties display: color of the current shape
 	viewport shapeColorPane() const {
-		return viewport(shapePropertiesPane().left(), 0, shapeColorWidth, shapePropertiesPane().height, showShapeProperties);
+		return viewport(shapePropertiesPane().left(), commandLinePane().top(), shapeColorWidth, shapePropertiesPane().height, showShapeProperties);
 	}
 	//Bottom-side glyph GLmode display
 	viewport glyphGLModePane() const {
@@ -256,67 +278,66 @@ void fullScreenQuad() {
 
 //Draw render an editor using OpenGL instructions
 void drawEditor(const editor& workbench) {
+	//Draw the Command Line
+	if (workbench.showCommandLine) {
+		setcolor(workbench.commandLineColor);
+		setViewport(workbench.fileTreePane());
+		fullScreenQuad();
+	}
 	//Draw the File Tree
 	if (workbench.showFileTree) {
-		glColor3f(1.0f, 0.0f, 0.0f);
+		setcolor(workbench.fileTreeColor);
 		setViewport(workbench.fileTreePane());
 		fullScreenQuad();
 	}
 	//Draw the Tab Header
 	if (workbench.showTabHeader) {
-		glColor3f(1.0f, 1.0f, 0.0f);
+		setcolor(workbench.tabHeaderColor);
 		setViewport(workbench.tabHeaderPane());
 		fullScreenQuad();
 	}
 	//Draw the Animation Frames
 	if (workbench.showAnimationFrames) {
-		glColor3f(0.0f, 1.0f, 0.0f);
+		setcolor(workbench.animationFramesColor);
 		setViewport(workbench.animationFramesPane());
 		fullScreenQuad();
 	}
 	//Draw the Layers
 	if (workbench.showLayers) {
-		glColor3f(0.0f, 1.0f, 1.0f);
+		setcolor(workbench.layersColor);
 		setViewport(workbench.layersPane());
 		fullScreenQuad();
 	}
 	//Draw the Shapes
 	if (workbench.showShapes) {
-		glColor3f(0.0f, 0.0f, 1.0f);
+		setcolor(workbench.shapesColor);
 		setViewport(workbench.shapesPane());
 		fullScreenQuad();
 	}
 	//Draw the Shape Properties
 	if (workbench.showShapeProperties) {
 		//Shape color
-		glColor3f(1.0f, 0.0f, 1.0f);
+		setcolor(workbench.shapeColorColor);
 		setViewport(workbench.shapeColorPane());
 		fullScreenQuad();
 		//Shape specifications
-		glColor3f(0.0f, 0.5f, 1.0f);
+		setcolor(workbench.shapeSpecificationsColor);
 		setViewport(workbench.shapeSpecificationsPane());
 		fullScreenQuad();
 	}
 	//Draw the Glyph GLmode
 	if (workbench.showGlyphGLMode) {
-		glColor3f(0.5f, 0.0f, 1.0f);
+		setcolor(workbench.glyphGLModeColor);
 		setViewport(workbench.glyphGLModePane());
 		fullScreenQuad();
 	}
 	//Draw the Tools
 	if (workbench.showTools) {
-		glColor3f(0.5f, 1.0f, 0.0f);
+		setcolor(workbench.toolsColor);
 		setViewport(workbench.toolsPane());
 		fullScreenQuad();
 	}
-	// DEBUGGING
-	if (false) {
-		glColor3f(1.0f, 0.0f, 0.0f);
-		setViewport(superWindowPane());
-		fullScreenQuad();
-	}
 }
-
 
 
 #endif

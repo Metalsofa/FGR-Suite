@@ -77,12 +77,6 @@ void renderScene(void) {
 	drawEditor(*currentTab);
 
 	setViewport(superWindowPane());
-	//Temprorary test instructions: Draw a single triangle
-	glBegin(GL_TRIANGLES);
-	glVertex2f(0.0f, 0.0f);
-	glVertex2f(10.0f, 0.0f);
-	glVertex2f(0.0f, 10.0f);
-	glEnd();
 
 	//This is the function that refreshes the canvas and implements everything we've 'drawn'
 	glutSwapBuffers();
