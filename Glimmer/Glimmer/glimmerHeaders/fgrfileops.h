@@ -29,7 +29,7 @@ point fgetpoint(FILE*& stream) {
 //	| STD::SIZE_T OBJECTCOUNT | <OBJECTS> |
 //
 
-//This function is not yet properly implemented
+//This function is not yet properly implemented. Maybe don't use it.
 
 /* Get a vector, list, etc. of class instances from a filestream. A function
 must be specified for reading in an individual instance of said class */
@@ -171,7 +171,7 @@ animation fgetanimation(FILE*& stream) {
 //Put a point into a filestream, and advance the internal position indicator by that many bytes
 void fputpoint(const point& obj, FILE*& stream) {
 	//This is the point that will be returned
-	float buffer[2] = { obj.x(), obj.y };
+	float buffer[2] = { obj.x(), obj.y() };
 	fwrite(buffer, sizeof(float), 2, stream);
 }
 
@@ -243,5 +243,88 @@ void fputanimation(const animation& obj, FILE*& stream) {
 	}
 }
 
+
+
+///////////////////// SLIGHTLY MORE USER-FRIENDLY FILE READING/WRITING FUNCITONS //////////////////////////
+
+//Reads a glyph out of the specified path and constructs and returns it
+glyph glyphFromFile(const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "r");
+	if (!fgrfile) return glyph();
+	glyph retg = fgetglyph(fgrfile);
+	fclose(fgrfile);
+	return retg;
+}
+
+//Writes a glyph object to a particular file path
+bool glpyhToFile(const glyph& art, const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "w");
+	if (!fgrfile) return false;
+	fputglyph(art, fgrfile);
+	fclose(fgrfile);
+	return true;
+}
+
+//Reads a shape out of the specified path and constructs and returns it
+shape shapeFromFile(const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "r");
+	if (!fgrfile) return shape();
+	shape retg = fgetshape(fgrfile);
+	fclose(fgrfile);
+	return retg;
+}
+
+//Writes a shape object to a particular file path
+bool shapeToFile(const shape& art, const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "w");
+	if (!fgrfile) return false;
+	fputshape(art, fgrfile);
+	fclose(fgrfile);
+	return true;
+}
+
+//Reads a graphic out of the specified path and constructs and returns it
+graphic graphicFromFile(const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "r");
+	if (!fgrfile) return graphic();
+	graphic retg = fgetgraphic(fgrfile);
+	fclose(fgrfile);
+	return retg;
+}
+
+//Writes a graphic object to a particular file path
+bool graphicToFile(const graphic& art, const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "w");
+	if (!fgrfile) return false;
+	fputgraphic(art, fgrfile);
+	fclose(fgrfile);
+	return true;
+}
+
+//Reads an animation out of the specified path and constructs and returns it
+animation animationFromFile(const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "r");
+	if (!fgrfile) return animation();
+	animation retg = fgetanimation(fgrfile);
+	fclose(fgrfile);
+	return retg;
+}
+
+//Writes an animation object to a particular file path
+bool graphicToFile(const animation& art, const std::string& path) {
+	FILE* fgrfile;
+	fopen_s(&fgrfile, path.c_str(), "w");
+	if (!fgrfile) return false;
+	fputanimation(art, fgrfile);
+	fclose(fgrfile);
+	return true;
+}
 
 #endif

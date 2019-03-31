@@ -40,29 +40,6 @@ void initGL() {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black and opaque
 }
 
-/* Handler for window-repaint event. Call back when the window first appears and
-   whenever the window needs to be re-painted. */ // Taken from https://www.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html
-void display() {
-	glClear(GL_COLOR_BUFFER_BIT);   // Clear the color buffer with current clearing color
-
-	drawEditor(*currentTab);
-
-	glFlush();  // Render now
-}
-
-/* Main function: GLUT runs as a console application starting at main()  */ // Taken from https://www.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html
-//int main(int argc, char** argv) {
-//	glutInit(&argc, argv);          // Initialize GLUT
-//	glutCreateWindow("Vertex, Primitive & Color");  // Create window with the given title
-//	glutInitWindowSize(320, 320);   // Set the window's initial width & height
-//	glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
-//	glutDisplayFunc(display);       // Register callback handler for window re-paint event
-//	initGL();                       // Our own OpenGL initialization
-//	glutMainLoop();                 // Enter the event-processing loop
-//	return 0;
-//}
-
-
 //Contains all gl-code; there should be no need to have any outside of this function
 void renderScene(void) {
 	//Screen-cleanup
@@ -82,9 +59,17 @@ void renderScene(void) {
 	glutSwapBuffers();
 }
 
+//Initialize the editor using the command line arguments
+void initTabs(int argc, char** argv) {
+	//Tabular setup
+	tabs.push_back(editor(eAnimation));
+	currentTab = tabs.begin();
+}
+
 //main function; exists to set up a few things and then enter the glut-main-loop
 int main(int argc, char** argv) {
 	//Command line args:
+	initTabs(argc, argv);
 
 	//Initialize GLUT
 	glutInit(&argc, argv);
@@ -113,10 +98,6 @@ int main(int argc, char** argv) {
 	////glutMouseFunc(MouseClick); //Callback for mouse clicks
 	////glutMotionFunc(PassiveMouseMove); //Callback for mouse movement with button down
 	////glutPassiveMotionFunc(PassiveMouseMove); //Callback for mouse movement with no button down
-	
-	//Tabular setup
-	tabs.push_back(editor(eAnimation));
-	currentTab = tabs.begin();
 
 	//initGL();
 	//

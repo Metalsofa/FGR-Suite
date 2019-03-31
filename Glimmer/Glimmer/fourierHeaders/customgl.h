@@ -251,7 +251,7 @@ void changeSize(int width, int height) {
 	//Reset Matrix
 	glLoadIdentity();
 	//Multiply the current matrix by one that makes the view orthographic
-	glOrtho(0.0f, windowWidth, 0.0f, windowHeight, 0.0f, 1.0f);
+	glOrtho(0.0, windowWidth, 0.0, windowHeight, -1.0, 1.0);
 	//Set viewport to be the entire window
 	//glViewport(0, 0, width, height);
 	//Get back to the modelview
