@@ -238,6 +238,7 @@ void ClearScreen() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
 /////////////////////WARNING: MOSTLY BORING STUFF AFTER THIS LINE/////////////////////////
 
+//Callback for when the window changes size
 void changeSize(int width, int height) {
 	windowHeight = height;
 	windowWidth = width;
@@ -249,9 +250,11 @@ void changeSize(int width, int height) {
 	glMatrixMode(GL_PROJECTION);
 	//Reset Matrix
 	glLoadIdentity();
+	//Multiply the current matrix by one that makes the view orthographic
+	glOrtho(0.0f, windowWidth, 0.0f, windowHeight, 0.0f, 1.0f);
 	//Set viewport to be the entire window
-	glViewport(0, 0, width, height);
-	////Get back to the modelview
+	//glViewport(0, 0, width, height);
+	//Get back to the modelview
 	glMatrixMode(GL_MODELVIEW);
 }
 

@@ -1,2 +1,5 @@
 ﻿  main.cpp
+c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(249): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
+c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(251): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
+c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(253): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
   Glimmer.vcxproj -> C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe

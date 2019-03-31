@@ -16,8 +16,6 @@ user-friendly fgr manipulation*/
 #include <map>
 #include <cassert>
 
-
-
 // Enumerate glModes to make it easy to remember
 enum GLmode { glPoints, glLines, glLineLoop, glLineStrip, glTriangles,
 glTriangleStrip, glTriangleFan, glQuads, glQuadStrip, glPolygon };

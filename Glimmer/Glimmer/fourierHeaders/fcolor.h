@@ -5,10 +5,6 @@
 
 #include <cmath>
 
-/*Attention Developoers:
-	This header file was developed for another project, so there are some namespace
-	conflicts with some of the other files. We are in the process of reformatting the
-	other files to make room for these names before we #include theme anywhere.*/
 
 class fcolor { //In this class, all levels are a float from 0 to 1.
 private:
