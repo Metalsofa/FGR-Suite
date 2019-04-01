@@ -182,10 +182,10 @@ public:
 	}
 	//Filepath constructor
 	editor(const std::string& filepath_) {
-		glyphArt = NULL;
-		shapeArt = NULL;
-		graphicArt = NULL;
-		animArt = NULL;
+		glyphArt =		NULL;
+		shapeArt =		NULL;
+		graphicArt =	NULL;
+		animArt =		NULL;
 		defaultSettings();
 		filepath = filepath_;
 		unsavedChanges = false;
@@ -194,10 +194,10 @@ public:
 	}
 	//Editor-type empty graphic constructor
 	editor(editortype format_) {
-		glyphArt = NULL;
-		shapeArt = NULL;
-		graphicArt = NULL;
-		animArt = NULL;
+		glyphArt =		NULL;
+		shapeArt =		NULL;
+		graphicArt =	NULL;
+		animArt =		NULL;
 		defaultSettings();
 		configureLayout(format_);
 		unsavedChanges = false;
@@ -213,33 +213,33 @@ public:
 	//Set settings to their defaults
 	void defaultSettings() {
 		//Default booleans
-		showFileTree = true;
-		showTabHeader = true;
-		showGlyphGLMode = true;
-		showTools = true;
-		showCommandLine = true;
+		showFileTree =				true;
+		showTabHeader =				true;
+		showGlyphGLMode =			true;
+		showTools =					true;
+		showCommandLine =			true;
 		//Default colors
-		commandLineColor = fcolor(0.0f, 0.0f, 0.0f);
-		fileTreeColor = fcolor(0.2f, 0.2f, 0.2f);
-		tabHeaderColor = fcolor(0.7f, 0.7f, 0.7f);
-		animationFramesColor = fcolor(0.3f, 0.3f, 0.3f);
-		layersColor = fcolor(0.4f, 0.4f, 0.4f);
-		shapesColor = fcolor(0.3f, 0.3f, 0.3f);
-		shapeColorColor = fcolor(0.5f, 0.5f, 0.5f);
-		shapeSpecificationsColor = fcolor(0.4f, 0.4f, 0.4f);
-		glyphGLModeColor = fcolor(0.6f, 0.6f, 0.6f);
-		toolsColor = fcolor(0.3f, 0.3f, 0.3f);
+		commandLineColor =			fcolor(0.0f, 0.0f, 0.0f);
+		fileTreeColor =				fcolor(0.2f, 0.2f, 0.2f);
+		tabHeaderColor =			fcolor(0.7f, 0.7f, 0.7f);
+		animationFramesColor =		fcolor(0.3f, 0.3f, 0.3f);
+		layersColor =				fcolor(0.4f, 0.4f, 0.4f);
+		shapesColor =				fcolor(0.3f, 0.3f, 0.3f);
+		shapeColorColor =			fcolor(0.5f, 0.5f, 0.5f);
+		shapeSpecificationsColor =	fcolor(0.4f, 0.4f, 0.4f);
+		glyphGLModeColor =			fcolor(0.6f, 0.6f, 0.6f);
+		toolsColor =				fcolor(0.3f, 0.3f, 0.3f);
 		//Default sizes
-		commandLineHeight = 22;
-		fileTreeWidth = 200;
-		tabHeaderHeight = 50;
-		animationFramesWidth = 100;
-		layersWidth = 100;
-		shapesWidth = 100;
-		shapePropertiesHeight = 100;
-		shapeColorWidth = 100;
-		glyphGLModeHeight = 30;
-		toolsWidth = 100;
+		commandLineHeight =			22;
+		fileTreeWidth =				200;
+		tabHeaderHeight =			50;
+		animationFramesWidth =		100;
+		layersWidth =				100;
+		shapesWidth =				100;
+		shapePropertiesHeight =		100;
+		shapeColorWidth =			200;
+		glyphGLModeHeight =			30;
+		toolsWidth =				100;
 	}
 	// The following functions are meant to provide information about the layout
 	//Bottom-side command line interface
@@ -413,16 +413,6 @@ bool editor::loadFile(const std::string& filepath) {
 	updateWindowName();
 }
 
-//Set the GL-Viewport using an instance of a viewport class.
-void setViewport(const viewport& rectangle) {
-	glViewport(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(rectangle.left(), rectangle.right(), rectangle.bottom(), rectangle.top(), -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity;
-}
-
 //Draw a quadrilateral the size of the screen onto the screen
 void fullScreenQuad() {
 	glBegin(GL_QUADS);
@@ -437,72 +427,92 @@ void fullScreenQuad() {
 	glEnd();
 }
 
+//Set the GL-Viewport using an instance of a viewport class.
+void setViewport(const viewport& rectangle, bool fillscreen = true) {
+	glViewport(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glRasterPos2i(rectangle.left(), rectangle.top() - 7);
+	glOrtho(rectangle.left(), rectangle.right(), rectangle.bottom(), rectangle.top(), -1.0f, 1.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	if (fillscreen) {
+		fullScreenQuad();
+	}
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glRasterPos2i(rectangle.left(), rectangle.top() - (18 - 0));
+}
+
 //Draw render an editor using OpenGL instructions
 void drawEditor(const editor& workbench) {
 	//Draw the Command Line
 	if (workbench.showCommandLine) {
 		setcolor(workbench.commandLineColor);
-		setViewport(workbench.fileTreePane());
-		fullScreenQuad();
-		glPushMatrix();
-			//glRasterPos2i(0, 0);
-			glColor3f(1.0f, 1.0f, 1.0f);
-			for (char c : "CONSOLE")
-				glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
-		glPopMatrix();
+		setViewport(workbench.commandLinePane());
+		for (char c : "<Command Line>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the File Tree
 	if (workbench.showFileTree) {
 		setcolor(workbench.fileTreeColor);
 		setViewport(workbench.fileTreePane());
-		fullScreenQuad();
+		for (char c : "<File Tree>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the Tab Header
 	if (workbench.showTabHeader) {
 		setcolor(workbench.tabHeaderColor);
 		setViewport(workbench.tabHeaderPane());
-		fullScreenQuad();
+		for (char c : "<Tab Header>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the Animation Frames
 	if (workbench.showAnimationFrames) {
 		setcolor(workbench.animationFramesColor);
 		setViewport(workbench.animationFramesPane());
-		fullScreenQuad();
+		for (char c : "<Animation Frames>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the Layers
 	if (workbench.showLayers) {
 		setcolor(workbench.layersColor);
 		setViewport(workbench.layersPane());
-		fullScreenQuad();
+		for (char c : "<Layers>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the Shapes
 	if (workbench.showShapes) {
 		setcolor(workbench.shapesColor);
 		setViewport(workbench.shapesPane());
-		fullScreenQuad();
+		for (char c : "<Shapes>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the Shape Properties
 	if (workbench.showShapeProperties) {
 		//Shape color
 		setcolor(workbench.shapeColorColor);
 		setViewport(workbench.shapeColorPane());
-		fullScreenQuad();
+		for (char c : "<Shape Color>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 		//Shape specifications
 		setcolor(workbench.shapeSpecificationsColor);
 		setViewport(workbench.shapeSpecificationsPane());
-		fullScreenQuad();
+		for (char c : "<Shape Specifications>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the Glyph GLmode
 	if (workbench.showGlyphGLMode) {
 		setcolor(workbench.glyphGLModeColor);
 		setViewport(workbench.glyphGLModePane());
-		fullScreenQuad();
+		for (char c : "<Glyph GLMode>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 	//Draw the Tools
 	if (workbench.showTools) {
 		setcolor(workbench.toolsColor);
 		setViewport(workbench.toolsPane());
-		fullScreenQuad();
+		for (char c : "<Tools>")
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
 	}
 }
 

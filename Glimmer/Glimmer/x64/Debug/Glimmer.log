@@ -2,9 +2,8 @@
 c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(18): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
 c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(23): warning C4806: '==': unsafe operation: no value of type 'bool' promoted to type 'char' can equal the given constant
 c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(37): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(423): warning C4551: function call missing argument list
-c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(432): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
-c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(434): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
-c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(436): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
+c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(422): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
+c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(424): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
+c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(426): warning C4244: 'argument': conversion from 'GLsizei' to 'GLfloat', possible loss of data
 c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(414): warning C4715: 'editor::loadFile': not all control paths return a value
   Glimmer.vcxproj -> C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe

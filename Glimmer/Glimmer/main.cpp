@@ -53,7 +53,7 @@ void renderScene(void) {
 	//Draw the current editor
 	drawEditor(*currentTab);
 
-	setViewport(superWindowPane());
+	setViewport(superWindowPane(), false);
 
 	//This is the function that refreshes the canvas and implements everything we've 'drawn'
 	glutSwapBuffers();
