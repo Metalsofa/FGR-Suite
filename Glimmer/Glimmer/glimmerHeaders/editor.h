@@ -276,7 +276,7 @@ public:
 	}
 	//Part of the shape-properties display: color of the current shape
 	viewport shapeColorPane() const {
-		return viewport(shapePropertiesPane().left(), commandLinePane().top(), shapeColorWidth, shapePropertiesPane().height, showShapeProperties);
+		return viewport(shapePropertiesPane().left(), commandLinePane().top(), shapePropertiesPane().width / 2, shapePropertiesPane().height, showShapeProperties);
 	}
 	//Bottom-side glyph GLmode display
 	viewport glyphGLModePane() const {
@@ -285,6 +285,10 @@ public:
 	//Right-hand side editor tools display
 	viewport toolsPane() const {
 		return viewport(fileTreePane().left() - toolsWidth, glyphGLModePane().top(), toolsWidth, tabHeaderPane().bottom() - glyphGLModePane().top(), showTools);
+	}
+	//Central editor display
+	viewport centralPane() const {
+		return viewport(shapesPane().right(), glyphGLModePane().top(), toolsPane().left() - shapesPane().right(), tabHeaderPane().bottom() - glyphGLModePane().top());
 	}
 	// DESTRUCTOR
 	//Deletes all art before going out of scope
@@ -415,15 +419,28 @@ bool editor::loadFile(const std::string& filepath) {
 
 //Draw a quadrilateral the size of the screen onto the screen
 void fullScreenQuad() {
+	GLint viewPortDims[4];
+	glGetIntegerv(GL_VIEWPORT, viewPortDims);
 	glBegin(GL_QUADS);
-		//Bottom left
-		glVertex2f(0.0f, 0.0f);
-		//Bottom right
-		glVertex2f(windowWidth, 0.0f);
-		//Top right
-		glVertex2f(windowWidth, windowHeight);
-		//Top left
-		glVertex2f(0.0f, windowHeight);
+		////Bottom left
+		//glVertex2i(viewPortDims[0], viewPortDims[1]);
+		////Bottom right
+		//glVertex2i(viewPortDims[2], viewPortDims[1]);
+		////Top right
+		//glVertex2i(viewPortDims[2], viewPortDims[3]);
+		////Top left
+		//glVertex2i(viewPortDims[0], viewPortDims[3]);
+		glVertex2i(0, 0); glVertex2i(windowWidth, 0); glVertex2i(windowWidth, windowHeight); glVertex2i(0, windowHeight);
+	glEnd();
+}
+
+//Draw the outline of a viewport
+void outlineViewport(const viewport& pane) {
+	glBegin(GL_LINE_LOOP);
+		glVertex2i(pane.left(), pane.bottom());
+		glVertex2i(pane.left(), pane.top());
+		glVertex2i(pane.right(), pane.top());
+		glVertex2i(pane.right(), pane.bottom());
 	glEnd();
 }
 
@@ -438,54 +455,57 @@ void setViewport(const viewport& rectangle, bool fillscreen = true) {
 	glLoadIdentity();
 	if (fillscreen) {
 		fullScreenQuad();
+		glColor3f(1.0f, 1.0f, 1.0f);
+		outlineViewport(rectangle);
 	}
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glRasterPos2i(rectangle.left(), rectangle.top() - (18 - 0));
+	glRasterPos2i(rectangle.left() + 4, rectangle.top() - (18 - 1));
 }
 
 //Draw render an editor using OpenGL instructions
 void drawEditor(const editor& workbench) {
+	void* fontNum = GLUT_BITMAP_HELVETICA_18;
 	//Draw the Command Line
 	if (workbench.showCommandLine) {
 		setcolor(workbench.commandLineColor);
 		setViewport(workbench.commandLinePane());
-		for (char c : "<Command Line>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+		//for (char c : "<Command Line>")
+		//	glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the File Tree
 	if (workbench.showFileTree) {
 		setcolor(workbench.fileTreeColor);
 		setViewport(workbench.fileTreePane());
 		for (char c : "<File Tree>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Tab Header
 	if (workbench.showTabHeader) {
 		setcolor(workbench.tabHeaderColor);
 		setViewport(workbench.tabHeaderPane());
 		for (char c : "<Tab Header>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Animation Frames
 	if (workbench.showAnimationFrames) {
 		setcolor(workbench.animationFramesColor);
 		setViewport(workbench.animationFramesPane());
 		for (char c : "<Animation Frames>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Layers
 	if (workbench.showLayers) {
 		setcolor(workbench.layersColor);
 		setViewport(workbench.layersPane());
 		for (char c : "<Layers>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Shapes
 	if (workbench.showShapes) {
 		setcolor(workbench.shapesColor);
 		setViewport(workbench.shapesPane());
 		for (char c : "<Shapes>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Shape Properties
 	if (workbench.showShapeProperties) {
@@ -493,26 +513,33 @@ void drawEditor(const editor& workbench) {
 		setcolor(workbench.shapeColorColor);
 		setViewport(workbench.shapeColorPane());
 		for (char c : "<Shape Color>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 		//Shape specifications
 		setcolor(workbench.shapeSpecificationsColor);
 		setViewport(workbench.shapeSpecificationsPane());
 		for (char c : "<Shape Specifications>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Glyph GLmode
 	if (workbench.showGlyphGLMode) {
 		setcolor(workbench.glyphGLModeColor);
 		setViewport(workbench.glyphGLModePane());
 		for (char c : "<Glyph GLMode>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Tools
 	if (workbench.showTools) {
 		setcolor(workbench.toolsColor);
 		setViewport(workbench.toolsPane());
 		for (char c : "<Tools>")
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+			glutBitmapCharacter(fontNum, c);
+	}
+	//Draw the central editor
+	if (true) {
+		setViewport(workbench.centralPane(), false);
+		outlineViewport(workbench.centralPane());
+		for (char c : "<Editor>")
+			glutBitmapCharacter(fontNum, c);
 	}
 }
 

@@ -173,6 +173,7 @@
     <ClInclude Include="freeglut\include\GL\freeglut_ext.h" />
     <ClInclude Include="freeglut\include\GL\freeglut_std.h" />
     <ClInclude Include="freeglut\include\GL\glut.h" />
+    <ClInclude Include="glimmerHeaders\controls.h" />
     <ClInclude Include="glimmerHeaders\editor.h" />
     <ClInclude Include="glimmerHeaders\fgrfileops.h" />
   </ItemGroup>

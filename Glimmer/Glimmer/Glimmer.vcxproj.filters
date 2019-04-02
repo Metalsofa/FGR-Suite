@@ -65,6 +65,9 @@
     <ClInclude Include="glimmerHeaders\fgrfileops.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="glimmerHeaders\controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE">

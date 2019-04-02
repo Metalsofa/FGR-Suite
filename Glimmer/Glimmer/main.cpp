@@ -26,6 +26,8 @@ tabContainerType tabs;
 //The current tab is pointed to by this
 tabContainerType::iterator currentTab;
 
+#include "controls.h"
+
 
 /*
  * GL02Primitive.cpp: Vertex, Primitive and Color
@@ -54,6 +56,7 @@ void renderScene(void) {
 	drawEditor(*currentTab);
 
 	setViewport(superWindowPane(), false);
+	outlineViewport(viewport(1,1,superWindowPane().right(), superWindowPane().top()));
 
 	//This is the function that refreshes the canvas and implements everything we've 'drawn'
 	glutSwapBuffers();
@@ -91,9 +94,9 @@ int main(int argc, char** argv) {
 	glutReshapeFunc(changeSize); //Callback for when window is resized
 
 	//// Control callbacks
-	////glutKeyboardFunc(ProcessNormalKeys); //Callback pressing a "normal" key
+	glutKeyboardFunc(processNormalKeys); //Callback pressing a "normal" key
 	////glutSpecialFunc(ProcessSpecialKeys); //Callback for a "special" key
-	////glutKeyboardUpFunc(ReleaseNormalKeys); //Callback for releasing "normal" keys
+	glutKeyboardUpFunc(releaseNormalKeys); //Callback for releasing "normal" keys
 	////glutSpecialUpFunc(ReleaseSpecialKeys); //Callback for releasing special keys
 	////glutMouseFunc(MouseClick); //Callback for mouse clicks
 	////glutMotionFunc(PassiveMouseMove); //Callback for mouse movement with button down
