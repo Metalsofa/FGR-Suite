@@ -25,6 +25,9 @@
     <Filter Include="Header Files\Fourier">
       <UniqueIdentifier>{e77b5f69-eba5-4e2f-adf0-1287d80f5e94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\fgr utilities">
+      <UniqueIdentifier>{44b28ab4-114e-461f-96f2-769aeb367991}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -59,14 +62,14 @@
     <ClInclude Include="glimmerHeaders\editor.h">
       <Filter>Header Files\Fourier</Filter>
     </ClInclude>
-    <ClInclude Include="fourierHeaders\fgrtoolkit.h">
-      <Filter>Header Files\Fourier</Filter>
-    </ClInclude>
-    <ClInclude Include="glimmerHeaders\fgrfileops.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="glimmerHeaders\controls.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrfileops.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrtoolkit.h">
+      <Filter>Header Files\fgr utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -208,7 +208,7 @@ but only if passed TRUE for the clamping of that bound.*/
 
 
 //Use openGL to render a shape at the origin of the matrix
-void drawFGR(const shape &obj) {
+void drawFGR(const fgr::shape &obj) {
 	setcolor(obj.color);
 	glLineWidth(obj.lineThickness);
 	glBegin(obj.mode);
@@ -217,17 +217,17 @@ void drawFGR(const shape &obj) {
 }
 
 //Use openGL to render a graphic at the origin of the matrix
-void drawFGR(const graphic& obj) {
+void drawFGR(const fgr::graphic& obj) {
 	obj.applyToAll(drawFGR);
 }
 
 //Use openGL to render an animation at the correct frame
-void drawFGR(const animation& obj) {
+void drawFGR(const fgr::animation& obj) {
 	drawFGR(*(obj.currentframe));
 }
 
 //Use openGL to render an animation at the correct frame, and advance it
-void animate(animation& obj) {
+void animate(fgr::animation& obj) {
 	drawFGR(obj.feed());
 }
 

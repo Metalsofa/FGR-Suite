@@ -122,13 +122,13 @@ public:
 	std::string filepath;
 	// Pointers to the art being worked on.
 	//Pointer to the glyph this editor has open
-	glyph* glyphArt;
+	fgr::glyph* glyphArt;
 	//Pointer to the shape this editor has open
-	shape* shapeArt;
+	fgr::shape* shapeArt;
 	//Pointer to the graphic this editor has open
-	graphic* graphicArt;
+	fgr::graphic* graphicArt;
 	//Pointer to the animation this editor has open
-	animation* animArt;
+	fgr::animation* animArt;
 	//Whether or not there are unsaved changes
 	bool unsavedChanges;
 	// Settings as to whether different editor panes are open, and their sizes when open
@@ -394,20 +394,20 @@ bool editor::loadFile(const std::string& filepath) {
 	//Load the appropriate graphic type onto the heap and point to it
 	switch (artform) {
 	case eGlyph:
-		glyphArt = new glyph;
-		*glyphArt = glyphFromFile(filepath);
+		glyphArt = new fgr::glyph;
+		*glyphArt = fgr::glyphFromFile(filepath);
 		break;
 	case eShape:
-		shapeArt = new shape;
-		*shapeArt = shapeFromFile(filepath);
+		shapeArt = new fgr::shape;
+		*shapeArt = fgr::shapeFromFile(filepath);
 		break;
 	case eGraphic:
-		graphicArt = new graphic;
-		*graphicArt = graphicFromFile(filepath);
+		graphicArt = new fgr::graphic;
+		*graphicArt = fgr::graphicFromFile(filepath);
 		break;
 	case eAnimation:
-		animArt = new animation;
-		*animArt = animationFromFile(filepath);
+		animArt = new fgr::animation;
+		*animArt = fgr::animationFromFile(filepath);
 		break;
 	case eSpritesheet:
 

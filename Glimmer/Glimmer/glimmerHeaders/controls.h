@@ -24,7 +24,7 @@ void processNormalKeys(unsigned char key, int x, int y) {
 		consoleMode = true;
 }
 
-//GLUR event handler for regular key-releases
+//GLUT event handler for regular key-releases
 void releaseNormalKeys(unsigned char key, int x, int y) {
 
 }
