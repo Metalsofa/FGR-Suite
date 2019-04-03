@@ -9,6 +9,7 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	if (cli::listening) {
 		if (key == 13) {
 			cli::gulp();
+			cli::listening = false;
 		}
 		else if (key == 8) {
 			if (cli::input.size()) {
