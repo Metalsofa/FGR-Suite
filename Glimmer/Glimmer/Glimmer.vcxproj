@@ -164,16 +164,18 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="fgrutils\fgrcolor.h" />
+    <ClInclude Include="fgrutils\fgrdrawing.h" />
     <ClInclude Include="fgrutils\fgrfileops.h" />
-    <ClInclude Include="fgrutils\fgrtoolkit.h" />
+    <ClInclude Include="fgrutils\fgrgeometry.h" />
+    <ClInclude Include="fgrutils\fgrutils.h" />
     <ClInclude Include="fourierHeaders\crypt.h" />
     <ClInclude Include="fourierHeaders\customgl.h" />
-    <ClInclude Include="fourierHeaders\fcolor.h" />
-    <ClInclude Include="fourierHeaders\geometry.h" />
     <ClInclude Include="freeglut\include\GL\freeglut.h" />
     <ClInclude Include="freeglut\include\GL\freeglut_ext.h" />
     <ClInclude Include="freeglut\include\GL\freeglut_std.h" />
     <ClInclude Include="freeglut\include\GL\glut.h" />
+    <ClInclude Include="glimmerHeaders\console.h" />
     <ClInclude Include="glimmerHeaders\controls.h" />
     <ClInclude Include="glimmerHeaders\editor.h" />
   </ItemGroup>

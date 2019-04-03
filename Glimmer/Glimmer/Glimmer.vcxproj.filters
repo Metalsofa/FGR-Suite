@@ -50,13 +50,7 @@
     <ClInclude Include="fourierHeaders\crypt.h">
       <Filter>Header Files\Fourier</Filter>
     </ClInclude>
-    <ClInclude Include="fourierHeaders\geometry.h">
-      <Filter>Header Files\Fourier</Filter>
-    </ClInclude>
     <ClInclude Include="fourierHeaders\customgl.h">
-      <Filter>Header Files\Fourier</Filter>
-    </ClInclude>
-    <ClInclude Include="fourierHeaders\fcolor.h">
       <Filter>Header Files\Fourier</Filter>
     </ClInclude>
     <ClInclude Include="glimmerHeaders\editor.h">
@@ -68,8 +62,20 @@
     <ClInclude Include="fgrutils\fgrfileops.h">
       <Filter>Header Files\fgr utilities</Filter>
     </ClInclude>
-    <ClInclude Include="fgrutils\fgrtoolkit.h">
+    <ClInclude Include="fgrutils\fgrutils.h">
       <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrcolor.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrgeometry.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrdrawing.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="glimmerHeaders\console.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -26,27 +26,27 @@ keyed vigenere cipher codebreaker program on the internet that could possible ha
 //Scrambling the alphabet now. Here's the old one: 
 //"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz;:[]{}<>', .?/!@#$%^&*()-_=+|`~";
 //Now for the new one, which includes the characters \ and " :
-const string cipherOldAlphabet = //not for use
+const std::string cipherOldAlphabet = //not for use
 "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz;:[]{}<>', .?/!@#$%^&*()-_=+|`~";
-const string cipherBaseAlphabet = //very tough to decode
+const std::string cipherBaseAlphabet = //very tough to decode
 "+L~A0|J`F9Ir8?/O!t@E#u$NhiP7nQRS^(K)-_s1v[B]{M}<C>', .%wG&Hxyz;:=T*U6VWXY\\ZD5abcde4f\"gj3klmo2pq";
 
 //Returns a shifted alphabet for the keyed vigenere cipher
-string alphabetShift(char& newFirstletter, const string baseAlphabet);
+std::string alphabetShift(char& newFirstletter, const std::string baseAlphabet);
 
-int letterIndex(char& letter, const string& alphabet);
+int letterIndex(char& letter, const std::string& alphabet);
 
-string encrypt(const string& message, const string& keyword);
+std::string encrypt(const std::string& message, const std::string& keyword);
 
-string multiEncrypt(unsigned int depth, string message, string keyword);
+std::string multiEncrypt(unsigned int depth, std::string message, std::string keyword);
 
-string unencrypt(string cryptogram, string keyword);
+std::string unencrypt(std::string cryptogram, std::string keyword);
 
-string multiUnencrypt(unsigned int depth, string cipher, string key);
+std::string multiUnencrypt(unsigned int depth, std::string cipher, std::string key);
 
 //Takes a filename and returns a vector where each line is an uncrypted line from the file.
-vector<string> unencryptedContents(string filename, string keyword);
+vector<std::string> unencryptedContents(std::string filename, std::string keyword);
 
-void encryptAndOverwrite(vector<string>& contents, string& filename, string keyword);
+void encryptAndOverwrite(vector<std::string>& contents, std::string& filename, std::string keyword);
 
 #endif

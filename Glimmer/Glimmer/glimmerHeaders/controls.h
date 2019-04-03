@@ -1,27 +1,32 @@
+//This header file defines the manner in which the user uses the keyboard and mouse to manipulate the program
 #pragma once
 
 #ifndef __controls_h__
 #define __controls_h__
 
-#include <map>
-
-//The console is not tab-specific, but session-specific.
-bool consoleMode = false;
-
-void consoleGulp() {
-
-}
-
-
 //GLUT event handler for regular key-presses
 void processNormalKeys(unsigned char key, int x, int y) {
-	if (consoleMode) {
-		if (key == 13)
-			consoleGulp();
+	if (cli::listening) {
+		if (key == 13) {
+			cli::gulp();
+		}
+		else if (key == 8) {
+			if (cli::input.size()) {
+				cli::input.pop_back();
+				if (!cli::input.size())
+					cli::listening = false;
+			}
+		}
+		else {
+			cli::input.push_back(key);
+		}
 
 	}
-	if (key == ':')
-		consoleMode = true;
+	if (key == ':') {
+		cli::listening = true;
+		cli::input.push_back(':');
+	}
+	renderScene();
 }
 
 //GLUT event handler for regular key-releases

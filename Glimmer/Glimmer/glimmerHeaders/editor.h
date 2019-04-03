@@ -1,10 +1,10 @@
-/* Defines the 'editor' class */
+/* Defines the 'editor' class which can be thought of as a 'tab' */
 #pragma once
 #ifndef __editor_h__
 #define __editor_h__
 
-#include "fgrtoolkit.h"
-#include "fgrfileops.h"
+#include "fgrutils.h"
+#include "console.h"
 
 #include <string> 
 #include <utility>
@@ -12,15 +12,15 @@
 //This enumerates the types of editor available
 enum editortype { eNULL, eGlyph, eShape, eGraphic, eAnimation, eSpritesheet };
 
-//Returns just the file extention of a string
+//Returns just the file extention of a std::string
 std::string getExtention(const std::string& filename) {
-	unsigned int i;
+	std::size_t i;
 	for (i = filename.size() - 1; i >= 0; --i) {
 		if (filename[i] == '.' || filename[i] == '\\' || filename[i] == '/')
 			break;
 	}
 	std::string ext;
-	if ( (i == 0 && !filename[0] == '.') || filename[i] == '\\' || filename[i] == '/')
+	if ( (i == 0 && !(filename[0] == '.')) || filename[i] == '\\' || filename[i] == '/')
 		return ext;
 	for (++i; i < filename.size(); ++i) {
 		ext.push_back(filename[i]);
@@ -28,19 +28,19 @@ std::string getExtention(const std::string& filename) {
 	return ext;
 }
 
-//Returns a pair of strings where the first is the relative path, 
+//Returns a pair of std::strings where the first is the relative path, 
 //and the second is the filename (including the extention)
 std::pair<std::string, std::string> splitPath(const std::string& path) {
 	std::pair<std::string, std::string> retp;
-	//Iterate backwards through the string
-	unsigned int i;
+	//Iterate backwards through the std::string
+	std::size_t i;
 	for (i = path.size() - 1; path[i] != '\\' && path[i] != '/' && i >= 0; --i);
 	retp.first = path.substr(0, ++i);
 	retp.second = path.substr(i, path.size() - i);
 	return retp;
 }
 
-//Returns an editor type by interpreting a string as a file extention
+//Returns an editor type by interpreting a std::string as a file extention
 editortype interpretextention(const std::string& ext) {
 	if (ext == "fgl")
 		return eGlyph;
@@ -135,41 +135,41 @@ public:
 	//COMMAND LINE (BOTTOM)
 		bool showCommandLine;
 		GLint commandLineHeight;
-		fcolor commandLineColor;
+		fgr::fcolor commandLineColor;
 	//FILE TREE (RIGHT)
 		bool showFileTree;
 		GLint fileTreeWidth;
-		fcolor fileTreeColor;
+		fgr::fcolor fileTreeColor;
 	//TAB HEADER (TOP)
 		bool showTabHeader;
 		GLint tabHeaderHeight;
-		fcolor tabHeaderColor;
+		fgr::fcolor tabHeaderColor;
 	//ANIMATION FRAMES (LEFT)
 		bool showAnimationFrames;
 		GLint animationFramesWidth;
-		fcolor animationFramesColor;
+		fgr::fcolor animationFramesColor;
 	//LAYERS (LEFT)
 		bool showLayers;
 		GLint layersWidth;
-		fcolor layersColor;
+		fgr::fcolor layersColor;
 	//SHAPES (LEFT)
 		bool showShapes;
 		GLint shapesWidth;
-		fcolor shapesColor;
+		fgr::fcolor shapesColor;
 	//SHAPE PROPERTIES (BOTTOM)
 		bool showShapeProperties;
 		GLint shapePropertiesHeight;
 		GLint shapeColorWidth;
-		fcolor shapeColorColor;
-		fcolor shapeSpecificationsColor;
+		fgr::fcolor shapeColorColor;
+		fgr::fcolor shapeSpecificationsColor;
 	//GLYPH GLMODE (BOTTOM)
 		bool showGlyphGLMode;
 		GLint glyphGLModeHeight;
-		fcolor glyphGLModeColor;
+		fgr::fcolor glyphGLModeColor;
 	//TOOLS (RIGHT)
 		bool showTools;
 		GLint toolsWidth;
-		fcolor toolsColor;
+		fgr::fcolor toolsColor;
 	// CONSTRUCTORS
 	//Default constructor
 	editor() {
@@ -219,16 +219,16 @@ public:
 		showTools =					true;
 		showCommandLine =			true;
 		//Default colors
-		commandLineColor =			fcolor(0.0f, 0.0f, 0.0f);
-		fileTreeColor =				fcolor(0.2f, 0.2f, 0.2f);
-		tabHeaderColor =			fcolor(0.7f, 0.7f, 0.7f);
-		animationFramesColor =		fcolor(0.3f, 0.3f, 0.3f);
-		layersColor =				fcolor(0.4f, 0.4f, 0.4f);
-		shapesColor =				fcolor(0.3f, 0.3f, 0.3f);
-		shapeColorColor =			fcolor(0.5f, 0.5f, 0.5f);
-		shapeSpecificationsColor =	fcolor(0.4f, 0.4f, 0.4f);
-		glyphGLModeColor =			fcolor(0.6f, 0.6f, 0.6f);
-		toolsColor =				fcolor(0.3f, 0.3f, 0.3f);
+		commandLineColor =			fgr::fcolor(0.0f, 0.0f, 0.0f);
+		fileTreeColor =				fgr::fcolor(0.2f, 0.2f, 0.2f);
+		tabHeaderColor =			fgr::fcolor(0.7f, 0.7f, 0.7f);
+		animationFramesColor =		fgr::fcolor(0.3f, 0.3f, 0.3f);
+		layersColor =				fgr::fcolor(0.4f, 0.4f, 0.4f);
+		shapesColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
+		shapeColorColor =			fgr::fcolor(0.5f, 0.5f, 0.5f);
+		shapeSpecificationsColor =	fgr::fcolor(0.4f, 0.4f, 0.4f);
+		glyphGLModeColor =			fgr::fcolor(0.6f, 0.6f, 0.6f);
+		toolsColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
 		//Default sizes
 		commandLineHeight =			22;
 		fileTreeWidth =				200;
@@ -412,6 +412,9 @@ bool editor::loadFile(const std::string& filepath) {
 	case eSpritesheet:
 
 		break;
+	//Otherwise we're dealing with enull
+	default:
+		return false;
 	}
 	//Set the name of the window appropriately
 	updateWindowName();
@@ -469,8 +472,9 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showCommandLine) {
 		setcolor(workbench.commandLineColor);
 		setViewport(workbench.commandLinePane());
-		//for (char c : "<Command Line>")
-		//	glutBitmapCharacter(fontNum, c);
+		std::string field = cli::getfield();
+		for (int i = 0; i < field.size(); ++i)
+			glutBitmapCharacter(fontNum, field[i]);
 	}
 	//Draw the File Tree
 	if (workbench.showFileTree) {

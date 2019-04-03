@@ -4,7 +4,8 @@
 #ifndef __FILEOPS_H__
 #define __FILEOPS_H__
 
-#include "fgrtoolkit.h"
+#include "fgrutils.h"
+#include "fgrcolor.h"
 
 namespace fgr {
 
@@ -77,7 +78,7 @@ namespace fgr {
 	//
 
 	//Get a shape from a file stream
-	fcolor fgetfcolor(FILE*& stream) {
+	fgr::fcolor fgetfcolor(FILE*& stream) {
 		//Read in the colors
 		float input[4];
 		fread(input, sizeof(float), 4, stream);

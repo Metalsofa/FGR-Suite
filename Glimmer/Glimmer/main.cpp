@@ -1,10 +1,10 @@
 /* Main source file for Glimmer */
 
+
 //Custom header includes
-#include "geometry.h"
-#include "crypt.h"
+//#include "crypt.h"
 #include "gl/glut.h"
-#include "fgrtoolkit.h"
+#include "fgrutils.h"
 #include "customgl.h"
 #include "editor.h"
 
@@ -26,6 +26,7 @@ tabContainerType tabs;
 //The current tab is pointed to by this
 tabContainerType::iterator currentTab;
 
+#include "console.h"
 #include "controls.h"
 
 
@@ -91,6 +92,7 @@ int main(int argc, char** argv) {
 
 	//// Display callbacks
 	glutDisplayFunc(renderScene); //Callback for when we refresh
+	//glutIdleFunc(renderScene);
 	glutReshapeFunc(changeSize); //Callback for when window is resized
 
 	//// Control callbacks
