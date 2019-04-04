@@ -25,6 +25,7 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	}
 	if (key == ':') {
 		cli::listening = true;
+		cli::showLastMessage = false;
 		cli::input.push_back(':');
 	}
 	renderScene();

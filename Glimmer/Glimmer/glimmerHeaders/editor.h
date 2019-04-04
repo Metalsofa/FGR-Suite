@@ -14,7 +14,7 @@ enum editortype { eNULL, eGlyph, eShape, eGraphic, eAnimation, eSpritesheet };
 //Returns just the file extention of a std::string
 std::string getExtention(const std::string& filename) {
 	std::size_t i;
-	for (i = filename.size() - 1; i >= 0; --i) {
+	for (i = filename.size() - 1; i > 0; --i) {
 		if (filename[i] == '.' || filename[i] == '\\' || filename[i] == '/')
 			break;
 	}
@@ -151,6 +151,12 @@ public:
 	fgr::animation* animArt;
 	//Whether or not there are unsaved changes
 	bool unsavedChanges;
+	//True iff this is a blank graphic nobody is going to miss.
+	bool blankFile;
+	// CENTRAL EDITOR PANE SETTINGS
+	fgr::point pan;
+	float zoom;
+	float rotation;
 	// Settings as to whether different editor panes are open, and their sizes when open
 	//COMMAND LINE (BOTTOM)
 		bool showCommandLine;
@@ -197,7 +203,7 @@ public:
 		shapeArt = NULL;
 		graphicArt = NULL;
 		animArt = NULL;
-		unsavedChanges = false;
+		unsavedChanges = true;
 		defaultSettings();
 	}
 	//Filepath constructor
@@ -221,7 +227,7 @@ public:
 		defaultSettings();
 		configureLayout(format_);
 		newfile(format_);
-		unsavedChanges = false;
+		unsavedChanges = true;
 	}
 	//Copy constructor
 	editor(const editor& other) {
@@ -246,14 +252,28 @@ public:
 	}
 	//Returns false if the extention is not recognized or the file contains a segmentation problem
 	bool loadFile(const std::string& filepath);
+	//Save the current artwork into a file
+	bool save();
+	//Save the current artwork to the specified file path
+	bool save(const std::string& path);
 	//Be careful - this function does not save any progress first
 	void deleteAllArt();
 	//Configure the layout of the editor to a particular editor type
 	void configureLayout(editortype format_);
 	//Change the name of the current window to reflect this editor
 	void updateWindowName() const;
+	//Update the text on the tab header
+	std::string tabTitle() const;
+	//Get the name of the file being worked on
+	std::string getFileName() const {
+		return splitPath(filepath).second;
+	}
 	//Set settings to their defaults
 	void defaultSettings() {
+		//Default editor pane settings
+		pan = fgr::point();
+		zoom = 0;
+		rotation = 0;
 		//Default booleans
 		showFileTree =				true;
 		showTabHeader =				true;
@@ -272,7 +292,7 @@ public:
 		glyphGLModeColor =			fgr::fcolor(0.6f, 0.6f, 0.6f);
 		toolsColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
 		//Default sizes
-		commandLineHeight =			22;
+		commandLineHeight =			24;
 		fileTreeWidth =				200;
 		tabHeaderHeight =			50;
 		animationFramesWidth =		100;
@@ -343,6 +363,8 @@ public:
 		deleteAllArt();
 		configureLayout(filetype);
 		filepath = "untitled." + associatedExtention(filetype);
+		blankFile = true;
+		unsavedChanges = true;
 		switch (filetype) {
 		case eAnimation:
 			animArt = new fgr::animation;
@@ -359,7 +381,34 @@ public:
 			break;
 		}
 	}
+	// EDITING FUNCTIONALITIES
+	//Editing to the selected shape/glyph should always be done through this
+	fgr::glyph& currentGlyph() const;
 };
+
+/* Editing to the selected shape/glyph should always be done through this.
+ * Be sure to update the 'blankFile' flag to false if something is changed!
+ * As well as the 'unsavedChanges' flag!!!! */
+fgr::glyph& editor::currentGlyph() const {
+	switch (format) {
+	case eSpritesheet:
+		//NOT YET SUPPORTED
+		break;
+	case eAnimation:
+		//NOT YET SUPPORTED
+		break;
+	case eGraphic:
+		//NOT YET SUPPORTED
+		break;
+	case eShape:
+		return *shapeArt;
+	case eGlyph:
+		return *glyphArt;
+	}
+	//Exception
+	assert(0 && "Bad logic in editor::currentGlyph");
+	return *glyphArt;
+}
 
 //Correctly format the editor layout to a particular editor type as is neccessary
 void editor::configureLayout(editortype format_) {
@@ -391,28 +440,38 @@ void editor::configureLayout(editortype format_) {
 	}
 }
 
+//Set the text shown on the tab header
+std::string editor::tabTitle() const {
+	std::string rets(getFileName() + " - ");
+	switch (format) {
+	case eSpritesheet:
+		rets += "Fourier Spritesheet";
+		break;
+	case eAnimation:
+		rets += "Fourier Animation";
+		break;
+	case eGraphic:
+		rets += "Fourier Graphic";
+		break;
+	case eShape:
+		rets += "Fourier Shape";
+		break;
+	case eGlyph:
+		rets += "Fourier Glyph";
+		break;
+	default:
+		rets += "Fourier <INVALID_EDITOR_TYPE>";
+	}
+	rets += " Editor";
+	return rets;
+}
+
 //Set the name of the GLUT window to reflect this editor
 void editor::updateWindowName() const {
 	std::string title = "Glimmer - ";
-	switch (format) {
-	case eSpritesheet:
-		title += "Fourier Spritesheet";
-		break;
-	case eAnimation:
-		title += "Fourier Animation";
-		break;
-	case eGraphic:
-		title += "Fourier Graphic";
-		break;
-	case eShape:
-		title += "Fourier Shape";
-		break;
-	case eGlyph:
-		title += "Fourier Glyph";
-		break;
-	}
-	title += " Editor - ";
-	title += splitPath(filepath).second;
+	title += getFileName();
+	if (unsavedChanges)
+		title += "[+]";
 	glutSetWindowTitle(title.c_str());
 }
 
@@ -443,35 +502,75 @@ void editor::deleteAllArt() {
 	return;
 }
 
+//Write the current artwork to a particular file path
+bool editor::save(const std::string& path) {
+	editortype targetFiletype = interpretextention(getExtention(path));
+	filepath = path;
+	//If the target extention is different from the current one,
+	if (format != targetFiletype) {
+		//Fail if the extention is invalid
+		if (!targetFiletype)
+			return false;
+		/*For now, also fail in any other mismatch case.
+		 *This function should not be the one to convert this graphic
+		 *into another type. The CLI should be using a different
+		 *function to convert the file format.*/
+		return false;
+	}
+	blankFile = false;
+	switch (format) {
+	case eGlyph:
+		return fgr::glyphToFile(*glyphArt, path);
+	case eShape:
+		return fgr::shapeToFile(*shapeArt, path);
+	case eGraphic:
+		return fgr::graphicToFile(*graphicArt, path);
+	case eAnimation:
+		return fgr::animationToFile(*animArt, path);
+	case eSpritesheet:
+
+		return false;
+	//Otherwise we're dealing with enull
+	default:
+		return false;
+	}
+}
+
+//Write the current artwork to the current file path
+bool editor::save() {
+	return save(filepath);
+}
+
 //Returns false if the extention is not recognized or the file contains a segmentation problem
 //Be careful - this will cause any unsaved changes to be lost.
-bool editor::loadFile(const std::string& filepath) {
-	//Delete all art from the heap before changing formats
-	deleteAllArt();
+bool editor::loadFile(const std::string& path) {
 	//Figure out what format this editor should be from the file extention
-	editortype artform = interpretextention(getExtention(filepath));
-	configureLayout(artform);
+	editortype artform = interpretextention(getExtention(path));
+	//Error-check the provided file extention
 	if (!artform)
 		return false;
+	configureLayout(artform);
+	//Delete all art from the heap before changing formats
+	deleteAllArt();
 	//Update the format
 	format = artform;
 	//Load the appropriate graphic type onto the heap and point to it
 	switch (artform) {
 	case eGlyph:
 		glyphArt = new fgr::glyph;
-		*glyphArt = fgr::glyphFromFile(filepath);
+		*glyphArt = fgr::glyphFromFile(path);
 		break;
 	case eShape:
 		shapeArt = new fgr::shape;
-		*shapeArt = fgr::shapeFromFile(filepath);
+		*shapeArt = fgr::shapeFromFile(path);
 		break;
 	case eGraphic:
 		graphicArt = new fgr::graphic;
-		*graphicArt = fgr::graphicFromFile(filepath);
+		*graphicArt = fgr::graphicFromFile(path);
 		break;
 	case eAnimation:
 		animArt = new fgr::animation;
-		*animArt = fgr::animationFromFile(filepath);
+		*animArt = fgr::animationFromFile(path);
 		break;
 	case eSpritesheet:
 
@@ -481,7 +580,9 @@ bool editor::loadFile(const std::string& filepath) {
 		return false;
 	}
 	//Set the name of the window appropriately
+	filepath = path;
 	updateWindowName();
+	return true;
 }
 
 //Draw a quadrilateral the size of the screen onto the screen
@@ -516,7 +617,7 @@ void setViewport(const viewport& rectangle, bool fillscreen = true) {
 	glViewport(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glRasterPos2i(rectangle.left(), rectangle.top() - 7);
+	glRasterPos2i(rectangle.left(), rectangle.top() - 6);
 	glOrtho(rectangle.left(), rectangle.right(), rectangle.bottom(), rectangle.top(), -1.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -543,7 +644,8 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showTabHeader) {
 		fgr::setcolor(workbench.tabHeaderColor);
 		setViewport(workbench.tabHeaderPane());
-		for (char c : splitPath(workbench.filepath).second)
+		std::string text(workbench.tabTitle());
+		for (char c : text)
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Animation Frames
@@ -600,6 +702,9 @@ void drawEditor(const editor& workbench) {
 		outlineViewport(workbench.centralPane());
 		for (char c : "<Editor>")
 			glutBitmapCharacter(fontNum, c);
+		glTranslatef(workbench.pan.x(), workbench.pan.y(), 0.0f);
+		glScalef(workbench.zoom, workbench.zoom, workbench.zoom);
+		glRotatef(workbench.rotation, 0.0f, 0.0f, 1.0f);
 		switch (workbench.format)
 		{
 		case eAnimation:

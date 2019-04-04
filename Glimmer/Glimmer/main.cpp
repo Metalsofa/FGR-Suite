@@ -79,7 +79,7 @@ void renderScene(void) {
 
 	glColor3f(1.0f, 1.0f, 1.0f);
 	setViewport(superWindowPane(), false);
-	outlineViewport(viewport(1,1,superWindowPane().right(), superWindowPane().top()));
+	outlineViewport(viewport(1, 1, superWindowPane().right(), superWindowPane().top()));
 
 	//This is the function that refreshes the canvas and implements everything we've 'drawn'
 	glutSwapBuffers();

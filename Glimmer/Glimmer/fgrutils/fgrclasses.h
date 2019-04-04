@@ -217,6 +217,7 @@ namespace fgr {
 			case 9:
 				return "GL_POLYGON";
 			}
+			//This logic path should never go off.
 			std::cerr << "Something happened in players.h/shape/getGLMODE that isn't supposed to..." << std::endl;
 			return "ERR_NOT_GLMODE";
 		}

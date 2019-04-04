@@ -259,7 +259,7 @@ namespace fgr {
 	}
 
 	//Writes a glyph object to a particular file path
-	bool glpyhToFile(const glyph& art, const std::string& path) {
+	bool glyphToFile(const glyph& art, const std::string& path) {
 		FILE* fgrfile;
 		fopen_s(&fgrfile, path.c_str(), "w");
 		if (!fgrfile) return false;
@@ -319,7 +319,7 @@ namespace fgr {
 	}
 
 	//Writes an animation object to a particular file path
-	bool graphicToFile(const animation& art, const std::string& path) {
+	bool animationToFile(const animation& art, const std::string& path) {
 		FILE* fgrfile;
 		fopen_s(&fgrfile, path.c_str(), "w");
 		if (!fgrfile) return false;
