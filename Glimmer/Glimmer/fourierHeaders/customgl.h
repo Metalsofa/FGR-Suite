@@ -10,19 +10,6 @@
 GLsizei windowHeight;
 GLsizei windowWidth;
 
-using namespace fgr;
-
-void setcolor(const fgr::fcolor& col) {
-	glColor4f(col.getLevel('r'), col.getLevel('g'), col.getLevel('b'), col.getLevel('a'));
-}
-
-void drawText(const point& location, const std::string& text) {
-	glRasterPos2f(location.x(), location.y());
-	for (unsigned int i = 0; i < text.size(); i++) { //glutBitmapString() https://stackoverflow.com/questions/544079/how-do-i-use-glutbitmapstd::string-in-c-to-draw-text-to-the-screen
-		//Draw each character    
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
-	}
-}
 
 //Clears the screen
 void ClearScreen() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }

@@ -1,3 +1,3 @@
 ﻿  main.cpp
-c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(421): warning C4715: 'editor::loadFile': not all control paths return a value
+c:\users\medlod\source\repos\metalsofa\fgr-suite\glimmer\glimmer\glimmerheaders\editor.h(485): warning C4715: 'editor::loadFile': not all control paths return a value
   Glimmer.vcxproj -> C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe

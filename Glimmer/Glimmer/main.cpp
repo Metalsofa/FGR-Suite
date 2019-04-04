@@ -3,7 +3,6 @@
 
 //Custom header includes
 //#include "crypt.h"
-#include "gl/glut.h"
 #include "fgrutils.h"
 #include "customgl.h"
 #include "editor.h"
@@ -26,6 +25,26 @@ tabContainerType tabs;
 //The current tab is pointed to by this
 tabContainerType::iterator currentTab;
 
+//Exits the program
+void closeProgram();
+
+//Returns true if and only if there are no unsaved changes in any tab
+bool sessionSaved() {
+	for (tabContainerType::iterator itr = tabs.begin(); itr != tabs.end(); ++itr) {
+		if (itr -> unsavedChanges) {
+			return false;
+		}
+	}
+	return true;
+}
+
+//Closes the tab at the iterator (doesn't check for saving!) and sets the tab iterator to the tab after it
+void closeTab(tabContainerType::iterator& which) {
+	which = tabs.erase(which);
+	if (!tabs.size()) {
+		closeProgram();
+	}
+}
 #include "console.h"
 #include "controls.h"
 
@@ -55,7 +74,10 @@ void renderScene(void) {
 
 	//Draw the current editor
 	drawEditor(*currentTab);
+	//Draw the little console window
+	cli::draw();
 
+	glColor3f(1.0f, 1.0f, 1.0f);
 	setViewport(superWindowPane(), false);
 	outlineViewport(viewport(1,1,superWindowPane().right(), superWindowPane().top()));
 
@@ -65,8 +87,13 @@ void renderScene(void) {
 
 //Initialize the editor using the command line arguments
 void initTabs(int argc, char** argv) {
+	//If this program was opened without a target file,
+	if (argc == 1) {
+		//Just open an animaiton editior
+
+	}
 	//Tabular setup
-	tabs.push_back(editor(eAnimation));
+	tabs.push_back(editor(eGlyph));
 	currentTab = tabs.begin();
 }
 
@@ -85,6 +112,7 @@ int main(int argc, char** argv) {
 
 	////Create the Window
 	glutCreateWindow("Glimmer");
+	currentTab->updateWindowName();
 
 	////Some settings
 	//glutIgnoreKeyRepeat(1);

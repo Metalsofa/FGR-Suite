@@ -62,9 +62,6 @@
     <ClInclude Include="fgrutils\fgrfileops.h">
       <Filter>Header Files\fgr utilities</Filter>
     </ClInclude>
-    <ClInclude Include="fgrutils\fgrutils.h">
-      <Filter>Header Files\fgr utilities</Filter>
-    </ClInclude>
     <ClInclude Include="fgrutils\fgrcolor.h">
       <Filter>Header Files\fgr utilities</Filter>
     </ClInclude>
@@ -76,6 +73,12 @@
     </ClInclude>
     <ClInclude Include="glimmerHeaders\console.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrclasses.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils.h">
+      <Filter>Header Files\fgr utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

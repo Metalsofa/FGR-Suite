@@ -6,6 +6,22 @@
 #include "fgrgeometry.h"
 
 namespace  fgr {
+
+	//Use an fgr::fcolor to set the gl rendering color
+	void setcolor(const fcolor& col) {
+		glColor4f(col.getLevel('r'), col.getLevel('g'), col.getLevel('b'), col.getLevel('a'));
+	}
+
+	//Draw specified text at a specified point (it's drawn pretty small)
+	void drawText(const point& location, const std::string& text) {
+		glRasterPos2f(location.x(), location.y());
+		for (unsigned int i = 0; i < text.size(); i++) { //glutBitmapString() https://stackoverflow.com/questions/544079/how-do-i-use-glutbitmapstd::string-in-c-to-draw-text-to-the-screen
+			//Draw each character    
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i]);
+		}
+	}
+	
+	// FGR GEOMETRY RENDERING FUNCTIONS
 	void glVertexPoint(const point& dot) {
 		glVertex2f(dot.x(), dot.y());
 	}
@@ -47,19 +63,6 @@ namespace  fgr {
 			drawPoint(seg.p2, thickness * 2.0f, labels);
 		}
 	}
-
-
-	void rendertext(const point& location, const std::string& text) {
-		// set position to text    
-		glRasterPos2f(location.x(), location.y());
-
-		for (unsigned int i = 0; i < text.size(); i++) {
-			// draw each character    
-			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
-		}
-		//glTranslatef(-dot.x(), -dot.y(), 0.0f);
-	}
-
 
 
 	void drawTriangle(const triangle& tri, bool filled, bool vertices, float pointsize, bool labels,
@@ -153,46 +156,66 @@ namespace  fgr {
 	/*Always at (0,0) in the matrix, drawn along the x-axis, left bound is like the phase angle.
 	Resolution represents the number of points used to paint a single crest/trough. Appears clamped by bounds for aesthetic,
 	but only if passed TRUE for the clamping of that bound.*/
-	//
-	//
-	//metastat colorfromID(int colorID) {
-	//	switch (colorID) {
-	//	case 0:
-	//		return clBlack;
-	//	case 1:
-	//		return clRed;
-	//		break;
-	//	case 2:
-	//		return clOrange;
-	//	case 3:
-	//		return clYellow;
-	//	case 4:
-	//		return clLime;
-	//	case 5:
-	//		return clGreen;
-	//	case 6:
-	//		return clTeal;
-	//	case 7:
-	//		return clCyan;
-	//	case 8:
-	//		return clIndigo;
-	//	case 9:
-	//		return clBlue;
-	//	case 10:
-	//		return clPurple;
-	//	case 11:
-	//		return clMagenta;
-	//	case 12:
-	//		return clViolet;
-	//	case 13:
-	//		return clWhite;
-	//	}
-	//	return clBlack;
-	//}
+	const fcolor clBlack(0.0f, 0.0f, 0.0f);
+	const fcolor clRed(1.0f, 0.0f, 0.0f);
+	const fcolor clOrange(1.0f, 0.5f, 0.0f);
+	const fcolor clYellow(1.0f, 1.0f, 0.0f);
+	const fcolor clLime(0.5f, 1.0f, 0.0f);
+	const fcolor clGreen(0.0f, 1.0f, 0.0f);
+	const fcolor clTeal(0.0f, 1.0f, 0.5f);
+	const fcolor clCyan(0.0f, 1.0f, 1.0f);
+	const fcolor clIndigo(0.0f, 0.5f, 1.0f);
+	const fcolor clBlue(0.0f, 0.5f, 1.0f);
+	const fcolor clPurple(0.5f, 0.0f, 1.0f);
+	const fcolor clMagenta(1.0f, 0.0f, 1.0f);
+	const fcolor clViolet(1.0f, 0.0f, 0.5f);
+	const fcolor clWhite(1.0f, 0.0f, 1.0f);
 
+	//Get a discrete hue from an integer 0-13 inclusive
+	fcolor colorfromID(int colorID) {
+		switch (colorID) {
+		case 0:
+			return clBlack;
+		case 1:
+			return clRed;
+		case 2:
+			return clOrange;
+		case 3:
+			return clYellow;
+		case 4:
+			return clLime;
+		case 5:
+			return clGreen;
+		case 6:
+			return clTeal;
+		case 7:
+			return clCyan;
+		case 8:
+			return clIndigo;
+		case 9:
+			return clBlue;
+		case 10:
+			return clPurple;
+		case 11:
+			return clMagenta;
+		case 12:
+			return clViolet;
+		default:
+		case 13:
+			return clWhite;
+		}
+	}
+
+
+	//Use openGL to render a glyph at the origin of the matrix
+	void draw(const fgr::glyph &obj) {
+		glBegin(obj.mode);
+		obj.applyToAll(glVertexPoint);
+		glEnd();
+	}
 
 	//Use openGL to render a shape at the origin of the matrix
-	void drawFGR(const fgr::shape &obj) {
+	void draw(const fgr::shape &obj) {
 		setcolor(obj.color);
 		glLineWidth(obj.lineThickness);
 		glBegin(obj.mode);
@@ -201,18 +224,19 @@ namespace  fgr {
 	}
 
 	//Use openGL to render a graphic at the origin of the matrix
-	void drawFGR(const fgr::graphic& obj) {
-		obj.applyToAll(drawFGR);
+	void draw(const fgr::graphic& obj) {
+		obj.applyToAll(draw);
 	}
 
+
 	//Use openGL to render an animation at the correct frame
-	void drawFGR(const fgr::animation& obj) {
-		drawFGR(*(obj.currentframe));
+	void draw(const fgr::animation& obj) {
+		draw(*(obj.currentframe));
 	}
 
 	//Use openGL to render an animation at the correct frame, and advance it
 	void animate(fgr::animation& obj) {
-		drawFGR(obj.feed());
+		draw(obj.feed());
 	}
 
 }

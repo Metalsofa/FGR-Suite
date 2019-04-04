@@ -4,7 +4,7 @@
 #ifndef __FILEOPS_H__
 #define __FILEOPS_H__
 
-#include "fgrutils.h"
+#include "fgrclasses.h"
 #include "fgrcolor.h"
 
 namespace fgr {

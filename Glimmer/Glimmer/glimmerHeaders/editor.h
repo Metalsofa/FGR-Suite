@@ -4,7 +4,6 @@
 #define __editor_h__
 
 #include "fgrutils.h"
-#include "console.h"
 
 #include <string> 
 #include <utility>
@@ -32,10 +31,13 @@ std::string getExtention(const std::string& filename) {
 //and the second is the filename (including the extention)
 std::pair<std::string, std::string> splitPath(const std::string& path) {
 	std::pair<std::string, std::string> retp;
+	if (!path.size()) {
+		return retp;
+	}
 	//Iterate backwards through the std::string
 	std::size_t i;
-	for (i = path.size() - 1; path[i] != '\\' && path[i] != '/' && i >= 0; --i);
-	retp.first = path.substr(0, ++i);
+	for (i = path.size() - 1;  i && path[i] != '\\' && path[i] != '/'; --i);
+	retp.first = path.substr(0, i);
 	retp.second = path.substr(i, path.size() - i);
 	return retp;
 }
@@ -53,6 +55,24 @@ editortype interpretextention(const std::string& ext) {
 	if (ext == "fss")
 		return eSpritesheet;
 	return eNULL;
+}
+
+//Returns the three-letter file extension associated with a type of fourier graphic. Period not included.
+std::string associatedExtention(editortype format) {
+	switch (format) {
+	case eGlyph:
+		return "fgl";
+	case eShape:
+		return "fsh";
+	case eGraphic:
+		return "fgr";
+	case eAnimation:
+		return "fan";
+	case eSpritesheet:
+		return "fss";
+	default:
+		return "dat";
+	}
 }
 
 //Stores viewport specifications
@@ -92,7 +112,7 @@ public:
 	// Returns the pixel position of one of the viewport's four boundaries
 	//Returns the pixel position of the right viewport boundary
 	GLint right() const {
-		return x + width * show;
+		return x + width * !!show;
 	}
 	//Returns the pixel position of the left viewport boundary
 	GLint left() const {
@@ -100,7 +120,7 @@ public:
 	}
 	//Returns the pixel position of the top viewport boundary
 	GLint top() const {
-		return y + height * show;
+		return y + height * !!show;
 	}
 	//Returns the pixel position of the bottom viewport boundary
 	GLint bottom() const {
@@ -200,7 +220,29 @@ public:
 		animArt =		NULL;
 		defaultSettings();
 		configureLayout(format_);
+		newfile(format_);
 		unsavedChanges = false;
+	}
+	//Copy constructor
+	editor(const editor& other) {
+		//Everything except these pointers can be copied by value directly
+		format = other.format;
+		filepath = other.filepath;
+		unsavedChanges = other.unsavedChanges;
+		glyphArt =		NULL;
+		shapeArt =		NULL;
+		graphicArt =	NULL;
+		animArt =		NULL;
+		if (other.glyphArt)
+			glyphArt = new fgr::glyph(*other.glyphArt);
+		if (other.shapeArt)
+			shapeArt = new fgr::shape(*other.shapeArt);
+		if (other.graphicArt)
+			graphicArt = new fgr::graphic(*other.graphicArt);
+		if (other.animArt)
+			animArt = new fgr::animation(*other.animArt);
+		//  LATER THIS HAS TO BE EXPANDED.
+		defaultSettings();
 	}
 	//Returns false if the extention is not recognized or the file contains a segmentation problem
 	bool loadFile(const std::string& filepath);
@@ -294,6 +336,28 @@ public:
 	//Deletes all art before going out of scope
 	~editor() {
 		deleteAllArt();
+	}
+	// OTHER METHODS
+	//Load an empty file of a given kind, which will cause loss of unsaved changes
+	void newfile(editortype filetype) {
+		deleteAllArt();
+		configureLayout(filetype);
+		filepath = "untitled." + associatedExtention(filetype);
+		switch (filetype) {
+		case eAnimation:
+			animArt = new fgr::animation;
+			break;
+		default:
+		case eGraphic:
+			graphicArt = new fgr::graphic;
+			break;
+		case eShape:
+			shapeArt = new fgr::shape;
+			break;
+		case eGlyph:
+			glyphArt = new fgr::glyph;
+			break;
+		}
 	}
 };
 
@@ -422,8 +486,8 @@ bool editor::loadFile(const std::string& filepath) {
 
 //Draw a quadrilateral the size of the screen onto the screen
 void fullScreenQuad() {
-	GLint viewPortDims[4];
-	glGetIntegerv(GL_VIEWPORT, viewPortDims);
+	//GLint viewPortDims[4];
+	//glGetIntegerv(GL_VIEWPORT, viewPortDims);
 	glBegin(GL_QUADS);
 		////Bottom left
 		//glVertex2i(viewPortDims[0], viewPortDims[1]);
@@ -468,45 +532,37 @@ void setViewport(const viewport& rectangle, bool fillscreen = true) {
 //Draw render an editor using OpenGL instructions
 void drawEditor(const editor& workbench) {
 	void* fontNum = GLUT_BITMAP_HELVETICA_18;
-	//Draw the Command Line
-	if (workbench.showCommandLine) {
-		setcolor(workbench.commandLineColor);
-		setViewport(workbench.commandLinePane());
-		std::string field = cli::getfield();
-		for (int i = 0; i < field.size(); ++i)
-			glutBitmapCharacter(fontNum, field[i]);
-	}
 	//Draw the File Tree
 	if (workbench.showFileTree) {
-		setcolor(workbench.fileTreeColor);
+		fgr::setcolor(workbench.fileTreeColor);
 		setViewport(workbench.fileTreePane());
 		for (char c : "<File Tree>")
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Tab Header
 	if (workbench.showTabHeader) {
-		setcolor(workbench.tabHeaderColor);
+		fgr::setcolor(workbench.tabHeaderColor);
 		setViewport(workbench.tabHeaderPane());
-		for (char c : "<Tab Header>")
+		for (char c : splitPath(workbench.filepath).second)
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Animation Frames
 	if (workbench.showAnimationFrames) {
-		setcolor(workbench.animationFramesColor);
+		fgr::setcolor(workbench.animationFramesColor);
 		setViewport(workbench.animationFramesPane());
 		for (char c : "<Animation Frames>")
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Layers
 	if (workbench.showLayers) {
-		setcolor(workbench.layersColor);
+		fgr::setcolor(workbench.layersColor);
 		setViewport(workbench.layersPane());
 		for (char c : "<Layers>")
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Shapes
 	if (workbench.showShapes) {
-		setcolor(workbench.shapesColor);
+		fgr::setcolor(workbench.shapesColor);
 		setViewport(workbench.shapesPane());
 		for (char c : "<Shapes>")
 			glutBitmapCharacter(fontNum, c);
@@ -514,26 +570,26 @@ void drawEditor(const editor& workbench) {
 	//Draw the Shape Properties
 	if (workbench.showShapeProperties) {
 		//Shape color
-		setcolor(workbench.shapeColorColor);
+		fgr::setcolor(workbench.shapeColorColor);
 		setViewport(workbench.shapeColorPane());
 		for (char c : "<Shape Color>")
 			glutBitmapCharacter(fontNum, c);
 		//Shape specifications
-		setcolor(workbench.shapeSpecificationsColor);
+		fgr::setcolor(workbench.shapeSpecificationsColor);
 		setViewport(workbench.shapeSpecificationsPane());
 		for (char c : "<Shape Specifications>")
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Glyph GLmode
 	if (workbench.showGlyphGLMode) {
-		setcolor(workbench.glyphGLModeColor);
+		fgr::setcolor(workbench.glyphGLModeColor);
 		setViewport(workbench.glyphGLModePane());
 		for (char c : "<Glyph GLMode>")
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Tools
 	if (workbench.showTools) {
-		setcolor(workbench.toolsColor);
+		fgr::setcolor(workbench.toolsColor);
 		setViewport(workbench.toolsPane());
 		for (char c : "<Tools>")
 			glutBitmapCharacter(fontNum, c);
@@ -544,6 +600,24 @@ void drawEditor(const editor& workbench) {
 		outlineViewport(workbench.centralPane());
 		for (char c : "<Editor>")
 			glutBitmapCharacter(fontNum, c);
+		switch (workbench.format)
+		{
+		case eAnimation:
+			fgr::draw(*workbench.animArt);
+			break;
+		case eGraphic:
+			fgr::draw(*workbench.graphicArt);
+			break;
+		case eShape:
+			fgr::draw(*workbench.shapeArt);
+			break;
+		case eGlyph:
+			fgr::draw(*workbench.glyphArt);
+			break;
+		default:
+			assert(0 && "INVALID GRAPHIC TYPE");
+		}
+
 	}
 }
 

@@ -17,13 +17,15 @@ namespace cli {
 	std::vector<std::string> messages;
 	//The text currently in the console
 	std::string input = std::string();
+	//The prefrence set as to the backgorund color of the command line
+	fgr::fcolor backColor(0.0f, 0.0f, 0.0f);
 	//Interpret and execute the commands from the input
-	int honor(const std::string& command);
+	int digest(const std::string& command);
 	//Digest the CLI input
 	void gulp() {
 		history.push_back(input);
 		input.erase(input.begin());
-		honor(input);
+		digest(input);
 		input.clear();
 	}
 	//Send a message to the console
@@ -46,14 +48,43 @@ namespace cli {
 		}
 		return std::string();
 	}
+	//Draw the console
+	void draw();
+}
+
+//Exit the program
+void closeProgram() {
+	cli::send_message("Exiting...");
+
+	exit(0);
 }
 
 //Interpret and execute the commands from the input
-int cli::honor(const std::string& command) {
+int cli::digest(const std::string& command) {
+	//Force quit
+	if (command == "q!") {
+		closeTab(currentTab);
+	}
+	//Quit
+	if (command == "q" && !currentTab->unsavedChanges) {
+		closeTab(currentTab);
+	}
+	//Write
+	if (command == "w") {
+
+	}
 
 	return 0;
 }
 
 
+//Rendering instructions for the console
+void cli::draw() {
+	setcolor(currentTab -> commandLineColor);
+	setViewport(currentTab -> commandLinePane());
+	std::string field = cli::getfield();
+	for (int i = 0; i < field.size(); ++i)
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, field[i]);
+}
 
 #endif
