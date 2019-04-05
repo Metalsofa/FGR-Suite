@@ -179,6 +179,7 @@
     <ClInclude Include="glimmerHeaders\console.h" />
     <ClInclude Include="glimmerHeaders\controls.h" />
     <ClInclude Include="glimmerHeaders\editor.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE" />
@@ -191,6 +192,12 @@
   <ItemGroup>
     <Text Include="freeglut\Copying.txt" />
     <Text Include="freeglut\Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Glimmer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="rsc\glimmer.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

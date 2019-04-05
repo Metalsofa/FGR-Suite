@@ -1,6 +1,6 @@
 /* Main source file for Glimmer */
-
 #include <string>
+#include "resource.h"
 //The location on the computer where this session takes place (is a folder, not a file)
 std::string sessionFilePath;
 
@@ -92,6 +92,39 @@ void initTabs(int argc, char** argv) {
 	}
 }
 
+//Converts a c-style string to a long-pointer-character-wide-string object, making a 
+//NEW one on the heap. Be sure to delete it when finished to avoid memory leaks.
+wchar_t* makeWideStr(const char*& text) {
+	// Based on the code from this stack overflow response
+	//https://stackoverflow.com/questions/29847036/convert-char-to-wchar-t-using-mbstowcs-s
+	std::size_t size = strlen(text) + 1;
+	wchar_t* wideText = new wchar_t[size];
+	//This argument isn't presently returned, but it's still here.
+	std::size_t outSizeArg;
+	mbstowcs_s(&outSizeArg, wideText, size, text, size - 1);
+	return wideText;
+}
+
+//This helper function sets the Window icon. It will probably only work on windows, and can
+//easily be trimmed from those releases
+void setWindowIconHelper(const char* windowname, const char* execname, int iconID) {
+	/* Thanks a ton to the following askers/answerers:
+	 *	https://stackoverflow.com/questions/12748103/how-to-change-freeglut-main-window-icon-in-c
+	 *	https://stackoverflow.com/questions/18064943/console-window-has-icon-but-opengl-glut-window-dont-have-why
+	 */
+	//Get the window handler
+	wchar_t* windt = makeWideStr(windowname);
+	HWND hwnd = FindWindow(NULL, windt);
+	delete windt;
+	SIZE smallIconSize = { GetSystemMetrics(SM_CXSMICON),
+					   GetSystemMetrics(SM_CYSMICON) };
+	wchar_t* exect = makeWideStr(execname);
+	HANDLE icon = LoadImage(GetModuleHandle(exect), MAKEINTRESOURCE(iconID), IMAGE_ICON, 32, 32, LR_COLOR);
+	delete exect;
+	SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
+}
+
+
 //main function; exists to set up a few things and then enter the glut-main-loop
 int main(int argc, char** argv) {
 	//Command line args:
@@ -105,8 +138,11 @@ int main(int argc, char** argv) {
 	glutInitWindowSize(900, 500);
 	//glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 
-	////Create the Window
-	glutCreateWindow("Glimmer");
+	//Create the Window
+	glutCreateWindow("GlimmerTitle");
+	//Set the window icon (windows only)
+	setWindowIconHelper("GlimmerTitle", argv[0], IDI_ICON1);
+	//Change the window name to something better
 	currentTab->updateWindowName();
 
 	////Some settings

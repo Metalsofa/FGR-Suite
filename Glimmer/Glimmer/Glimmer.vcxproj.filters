@@ -83,6 +83,9 @@
     <ClInclude Include="fgrutils\fgrutils.h">
       <Filter>Header Files\fgr utilities</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE">
@@ -111,5 +114,15 @@
     <Text Include="freeglut\Readme.txt">
       <Filter>Documentation\freeglut</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Glimmer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="rsc\glimmer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
