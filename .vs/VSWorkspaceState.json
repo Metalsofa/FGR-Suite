@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Glimmer",
+    "\\Glimmer\\Glimmer"
   ],
+  "SelectedNode": "\\Glimmer\\Glimmer.sln",
   "PreviewInSolutionExplorer": false
 }

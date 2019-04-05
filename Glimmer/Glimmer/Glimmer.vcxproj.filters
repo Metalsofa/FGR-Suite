@@ -25,6 +25,12 @@
     <Filter Include="Header Files\Fourier">
       <UniqueIdentifier>{e77b5f69-eba5-4e2f-adf0-1287d80f5e94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\fgr utilities">
+      <UniqueIdentifier>{44b28ab4-114e-461f-96f2-769aeb367991}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FGRs">
+      <UniqueIdentifier>{5dee2b64-af86-4af9-ae04-96c97ca287be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -47,22 +53,37 @@
     <ClInclude Include="fourierHeaders\crypt.h">
       <Filter>Header Files\Fourier</Filter>
     </ClInclude>
-    <ClInclude Include="fourierHeaders\geometry.h">
-      <Filter>Header Files\Fourier</Filter>
-    </ClInclude>
     <ClInclude Include="fourierHeaders\customgl.h">
-      <Filter>Header Files\Fourier</Filter>
-    </ClInclude>
-    <ClInclude Include="fourierHeaders\fcolor.h">
       <Filter>Header Files\Fourier</Filter>
     </ClInclude>
     <ClInclude Include="glimmerHeaders\editor.h">
       <Filter>Header Files\Fourier</Filter>
     </ClInclude>
-    <ClInclude Include="fourierHeaders\fgrtoolkit.h">
-      <Filter>Header Files\Fourier</Filter>
+    <ClInclude Include="glimmerHeaders\controls.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="glimmerHeaders\fgrfileops.h">
+    <ClInclude Include="fgrutils\fgrfileops.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrcolor.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrgeometry.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrdrawing.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="glimmerHeaders\console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrclasses.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrutils\fgrutils.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -73,6 +94,18 @@
     <None Include="..\..\README.md">
       <Filter>Documentation</Filter>
     </None>
+    <None Include="eoifjwqoepjfpqwoiejfwe">
+      <Filter>FGRs</Filter>
+    </None>
+    <None Include="h">
+      <Filter>FGRs</Filter>
+    </None>
+    <None Include="iii">
+      <Filter>FGRs</Filter>
+    </None>
+    <None Include="untitled.fgl">
+      <Filter>FGRs</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="freeglut\Copying.txt">
@@ -81,5 +114,15 @@
     <Text Include="freeglut\Readme.txt">
       <Filter>Documentation\freeglut</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Glimmer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="rsc\glimmer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
