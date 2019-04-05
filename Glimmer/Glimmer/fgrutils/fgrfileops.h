@@ -50,7 +50,7 @@ namespace fgr {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//		GLYPH BINARY STRUCTURE
 	//
-	//	| CHAR GLMODE | STD::SIZE_T POINT_COUNT | FLOAT X_1 | FLOAT Y_1 | FLOAT X_2 | FLOAT Y_2 | ... | FLOAT X_N | FLOAT Y_N |
+	//	| GLmode GLMODE | STD::SIZE_T POINT_COUNT | FLOAT X_1 | FLOAT Y_1 | FLOAT X_2 | FLOAT Y_2 | ... | FLOAT X_N | FLOAT Y_N |
 	//
 
 	//Get a glyph from a file stream
@@ -248,14 +248,14 @@ namespace fgr {
 
 	///////////////////// SLIGHTLY MORE USER-FRIENDLY FILE READING/WRITING FUNCITONS //////////////////////////
 
-	//Reads a glyph out of the specified path and constructs and returns it
-	glyph glyphFromFile(const std::string& path) {
+	//Reads a glyph out of the specified path and assigns it to the glyph refrence passed in
+	bool glyphFromFile(glyph& art, const std::string& path) {
 		FILE* fgrfile;
 		fopen_s(&fgrfile, path.c_str(), "r");
-		if (!fgrfile) return glyph();
-		glyph retg = fgetglyph(fgrfile);
+		if (!fgrfile) return false;
+		art = fgetglyph(fgrfile);
 		fclose(fgrfile);
-		return retg;
+		return true;
 	}
 
 	//Writes a glyph object to a particular file path
@@ -268,14 +268,14 @@ namespace fgr {
 		return true;
 	}
 
-	//Reads a shape out of the specified path and constructs and returns it
-	shape shapeFromFile(const std::string& path) {
+	//Reads a shape out of the specified path and assigns it to the shape refrence passed in
+	bool shapeFromFile(shape& art, const std::string& path) {
 		FILE* fgrfile;
 		fopen_s(&fgrfile, path.c_str(), "r");
-		if (!fgrfile) return shape();
-		shape retg = fgetshape(fgrfile);
+		if (!fgrfile) return false;
+		art = fgetshape(fgrfile);
 		fclose(fgrfile);
-		return retg;
+		return true;
 	}
 
 	//Writes a shape object to a particular file path
@@ -288,14 +288,14 @@ namespace fgr {
 		return true;
 	}
 
-	//Reads a graphic out of the specified path and constructs and returns it
-	graphic graphicFromFile(const std::string& path) {
+	//Reads a graphic out of the specified path and assigns it to the graphic refrence passed in
+	bool graphicFromFile(graphic& art, const std::string& path) {
 		FILE* fgrfile;
 		fopen_s(&fgrfile, path.c_str(), "r");
-		if (!fgrfile) return graphic();
-		graphic retg = fgetgraphic(fgrfile);
+		if (!fgrfile) return false;
+		art = fgetgraphic(fgrfile);
 		fclose(fgrfile);
-		return retg;
+		return true;
 	}
 
 	//Writes a graphic object to a particular file path
@@ -308,14 +308,14 @@ namespace fgr {
 		return true;
 	}
 
-	//Reads an animation out of the specified path and constructs and returns it
-	animation animationFromFile(const std::string& path) {
+	//Reads an animation out of the specified path and assigns it to the animation refrence passed in
+	bool animationFromFile(animation& art, const std::string& path) {
 		FILE* fgrfile;
 		fopen_s(&fgrfile, path.c_str(), "r");
-		if (!fgrfile) return animation();
-		animation retg = fgetanimation(fgrfile);
+		if (!fgrfile) return false;
+		art = fgetanimation(fgrfile);
 		fclose(fgrfile);
-		return retg;
+		return true;
 	}
 
 	//Writes an animation object to a particular file path

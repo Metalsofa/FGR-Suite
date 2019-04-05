@@ -9,7 +9,6 @@ user-friendly fgr manipulation*/
 #include "fgrgeometry.h"
 #include "fgrcolor.h"
 
-#include <string>
 #include <vector>
 #include <list>
 #include <map>
@@ -39,6 +38,7 @@ namespace fgr {
 	class glyph : public glyphContainer {
 	public:
 		using glyphContainer::iterator;
+		using glyphContainer::const_iterator;
 		using glyphContainer::push_back;
 		using glyphContainer::erase;
 		using glyphContainer::insert;
@@ -116,6 +116,71 @@ namespace fgr {
 				transformFunc(*itr);
 			}
 		}
+		//Scale this shape strictly in the x-dimension around the origin
+		void rescaleX(float scalingFactor) {
+			for (iterator itr = begin(); itr != end(); itr++) {
+				itr->xmult(scalingFactor);
+			}
+		}
+		//Scale this shape strictly in the y-dimension around the origin
+		void rescaleY(float scalingFactor) {
+			for (iterator itr = begin(); itr != end(); itr++) {
+				itr->ymult(scalingFactor);
+			}
+		}
+		//Returns the diagonally-spanning segment for this shape
+		const segment bounds() const {
+			segment rets = segment(front(), *(++begin()));
+			//Iterate through every point and set the bounding segment accordingly
+			for (const_iterator itr = begin(); itr != end(); itr++) {
+				//Check rightbounds
+				if (itr->x() > rets.p2.x()) {
+					rets.p2.x(itr->x());
+				}
+				//Check topbounds
+				if (itr->y() > rets.p2.y()) {
+					rets.p2.y(itr->y());
+				}
+				//Check leftbounds
+				if (itr->x() < rets.p1.x()) {
+					rets.p1.x(itr->x());
+				}
+				//Check bottombounds
+				if (itr->y() < rets.p1.y()) {
+					rets.p1.y(itr->y());
+				}
+			}
+			//Now rets is the bounding segment for this shape!
+			return rets;
+		}
+		//Returns the name of the GL drawing mode associated with this shape
+		const char* glModeString() const {
+			switch (mode % 10) {
+			case 0:
+				return "GL_POINTS";
+			case 1:
+				return "GL_LINES";
+			case 2:
+				return "GL_LINE_LOOP";
+			case 3:
+				return "GL_LINE_STRIP";
+			case 4:
+				return "GL_TRIANGLES";
+			case 5:
+				return "GL_TRIANGLE_STRIP";
+			case 6:
+				return "GL_TRIANGLE_FAN";
+			case 7:
+				return "GL_QUADS";
+			case 8:
+				return "GL_QUAD_STRIP";
+			case 9:
+				return "GL_POLYGON";
+			}
+			//This logic path should never go off.
+			std::cerr << "Something happened in players.h/shape/getGLMODE that isn't supposed to..." << std::endl;
+			return "ERR_NOT_GLMODE";
+		}
 	};
 
 	// More commonly used than the glyph, the shape has color and a few other aspects
@@ -155,71 +220,6 @@ namespace fgr {
 			color = color_;
 			lineThickness = lineWidth_;
 			pointSize = pointSize_;
-		}
-		//Scale this shape strictly in the x-dimension around the origin
-		void rescaleX(float scalingFactor) {
-			for (iterator itr = begin(); itr != end(); itr++) {
-				itr->xmult(scalingFactor);
-			}
-		}
-		//Scale this shape strictly in the y-dimension around the origin
-		void rescaleY(float scalingFactor) {
-			for (iterator itr = begin(); itr != end(); itr++) {
-				itr->ymult(scalingFactor);
-			}
-		}
-		//Returns the diagonally-spanning segment for this shape
-		const segment bounds() const {
-			segment rets = segment(front(), *(++begin()));
-			//Iterate through every point and set the bounding segment accordingly
-			for (const_iterator itr = begin(); itr != end(); itr++) {
-				//Check rightbounds
-				if (itr->x() > rets.p2.x()) {
-					rets.p2.x(itr->x());
-				}
-				//Check topbounds
-				if (itr->y() > rets.p2.y()) {
-					rets.p2.y(itr->y());
-				}
-				//Check leftbounds
-				if (itr->x() < rets.p1.x()) {
-					rets.p1.x(itr->x());
-				}
-				//Check bottombounds
-				if (itr->y() < rets.p1.y()) {
-					rets.p1.y(itr->y());
-				}
-			}
-			//Now rets is the bounding segment for this shape!
-			return rets;
-		}
-		//Returns the name of the GL drawing mode associated with this shape
-		std::string getGLMODE() const {
-			switch (mode % 10) {
-			case 0:
-				return "GL_POINTS";
-			case 1:
-				return "GL_LINES";
-			case 2:
-				return "GL_LINE_LOOP";
-			case 3:
-				return "GL_LINE_STRIP";
-			case 4:
-				return "GL_TRIANGLES";
-			case 5:
-				return "GL_TRIANGLE_STRIP";
-			case 6:
-				return "GL_TRIANGLE_FAN";
-			case 7:
-				return "GL_QUADS";
-			case 8:
-				return "GL_QUAD_STRIP";
-			case 9:
-				return "GL_POLYGON";
-			}
-			//This logic path should never go off.
-			std::cerr << "Something happened in players.h/shape/getGLMODE that isn't supposed to..." << std::endl;
-			return "ERR_NOT_GLMODE";
 		}
 	};
 
@@ -403,6 +403,7 @@ namespace fgr {
 	class animation : public animationContainer {
 	public:
 		using animationContainer::iterator;
+		using animationContainer::const_iterator;
 		using animationContainer::push_back;
 		using animationContainer::erase;
 		using animationContainer::insert;
@@ -427,6 +428,17 @@ namespace fgr {
 			for (animation::const_iterator itr = other.begin(); itr != other.currentframe; ++itr, ++currentframe);
 			frameclock = other.frameclock;
 			cycle = other.cycle;
+		}
+		// Assignment Operator
+		animation& operator= (const animation& other) {
+			for (const_iterator itr = other.begin(); itr != other.end(); ++itr) {
+				push_back(*itr);
+			}
+			currentframe = begin();
+			for (animation::const_iterator itr = other.begin(); itr != other.currentframe; ++itr, ++currentframe);
+			frameclock = other.frameclock;
+			cycle = other.cycle;
+			return *this;
 		}
 		// Construct from an animation container type
 		animation(bool cycle_, animationContainer framedata) : animationContainer(framedata) {

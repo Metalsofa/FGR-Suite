@@ -1,5 +1,8 @@
 /* Main source file for Glimmer */
 
+#include <string>
+//The location on the computer where this session takes place (is a folder, not a file)
+std::string sessionFilePath;
 
 //Custom header includes
 //#include "crypt.h"
@@ -11,15 +14,12 @@
 #include <Windows.h>
 #include <cmath>
 #include <stdlib.h>
-#include <string>
 #include <time.h>
 #include <vector>
 
 
 typedef std::list<editor> tabContainerType;
 //Some global variables
-//The location on the computer where this session takes place (is a folder, not a file)
-std::string sessionFilePath;
 //Every editor is in this vector
 tabContainerType tabs;
 //The current tab is pointed to by this
@@ -49,12 +49,8 @@ void closeTab(tabContainerType::iterator& which) {
 #include "controls.h"
 
 
-/*
- * GL02Primitive.cpp: Vertex, Primitive and Color
- * Draw Simple 2D colored Shapes: quad, triangle and polygon.
- */
-#include <windows.h>  // for MS Windows
-#include <GL/glut.h>  // GLUT, include glu.h and gl.h
+#include <windows.h>
+#include <GL/glut.h>
 
  /* Initialize OpenGL Graphics */
 void initGL() {
@@ -89,12 +85,11 @@ void renderScene(void) {
 void initTabs(int argc, char** argv) {
 	//If this program was opened without a target file,
 	if (argc == 1) {
-		//Just open an animaiton editior
-
+		//Tabular setup
+		tabs.push_back(editor(eGlyph));
+		currentTab = tabs.begin();
+		tabs.back().blankFile = true;
 	}
-	//Tabular setup
-	tabs.push_back(editor(eGlyph));
-	currentTab = tabs.begin();
 }
 
 //main function; exists to set up a few things and then enter the glut-main-loop

@@ -287,7 +287,7 @@ public:
 		animationFramesColor =		fgr::fcolor(0.3f, 0.3f, 0.3f);
 		layersColor =				fgr::fcolor(0.4f, 0.4f, 0.4f);
 		shapesColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
-		shapeColorColor =			fgr::fcolor(0.5f, 0.5f, 0.5f);
+		shapeColorColor =			fgr::fcolor(0.4f, 0.4f, 0.4f);
 		shapeSpecificationsColor =	fgr::fcolor(0.4f, 0.4f, 0.4f);
 		glyphGLModeColor =			fgr::fcolor(0.6f, 0.6f, 0.6f);
 		toolsColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
@@ -300,7 +300,7 @@ public:
 		shapesWidth =				100;
 		shapePropertiesHeight =		100;
 		shapeColorWidth =			200;
-		glyphGLModeHeight =			30;
+		glyphGLModeHeight =			commandLineHeight;
 		toolsWidth =				100;
 	}
 	// The following functions are meant to provide information about the layout
@@ -363,7 +363,6 @@ public:
 		deleteAllArt();
 		configureLayout(filetype);
 		filepath = "untitled." + associatedExtention(filetype);
-		blankFile = true;
 		unsavedChanges = true;
 		switch (filetype) {
 		case eAnimation:
@@ -442,7 +441,9 @@ void editor::configureLayout(editortype format_) {
 
 //Set the text shown on the tab header
 std::string editor::tabTitle() const {
-	std::string rets(getFileName() + " - ");
+	std::string rets(getFileName());
+	if (unsavedChanges) rets += "[+]";
+	rets += " - ";
 	switch (format) {
 	case eSpritesheet:
 		rets += "Fourier Spritesheet";
@@ -549,29 +550,29 @@ bool editor::loadFile(const std::string& path) {
 	//Error-check the provided file extention
 	if (!artform)
 		return false;
-	configureLayout(artform);
 	//Delete all art from the heap before changing formats
 	deleteAllArt();
+	//Update the file path
+	filepath = path;
+	//Reconfigure the layout (also sets the editor format)
+	configureLayout(artform);
 	//Update the format
 	format = artform;
 	//Load the appropriate graphic type onto the heap and point to it
+	bool foundFile = true;
 	switch (artform) {
 	case eGlyph:
 		glyphArt = new fgr::glyph;
-		*glyphArt = fgr::glyphFromFile(path);
-		break;
+		return fgr::glyphFromFile(*glyphArt, path);
 	case eShape:
 		shapeArt = new fgr::shape;
-		*shapeArt = fgr::shapeFromFile(path);
-		break;
+		return fgr::shapeFromFile(*shapeArt, path);
 	case eGraphic:
 		graphicArt = new fgr::graphic;
-		*graphicArt = fgr::graphicFromFile(path);
-		break;
+		return fgr::graphicFromFile(*graphicArt, path);
 	case eAnimation:
 		animArt = new fgr::animation;
-		*animArt = fgr::animationFromFile(path);
-		break;
+		return fgr::animationFromFile(*animArt, path);
 	case eSpritesheet:
 
 		break;
@@ -637,8 +638,14 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showFileTree) {
 		fgr::setcolor(workbench.fileTreeColor);
 		setViewport(workbench.fileTreePane());
-		for (char c : "<File Tree>")
-			glutBitmapCharacter(fontNum, c);
+		if (sessionFilePath.size()) {
+			for (char c : sessionFilePath)
+				glutBitmapCharacter(fontNum, c);
+		}
+		else {
+			for (char c : "[NO SESSION DIRECTORY]")
+				glutBitmapCharacter(fontNum, c);
+		}
 	}
 	//Draw the Tab Header
 	if (workbench.showTabHeader) {
@@ -686,7 +693,12 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showGlyphGLMode) {
 		fgr::setcolor(workbench.glyphGLModeColor);
 		setViewport(workbench.glyphGLModePane());
-		for (char c : "<Glyph GLMode>")
+		std::string modeword;
+		if (workbench.glyphArt)
+			modeword = workbench.glyphArt->glModeString();
+		else
+			modeword = "No glyph loaded";
+		for (char c : modeword)
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Tools
@@ -700,7 +712,8 @@ void drawEditor(const editor& workbench) {
 	if (true) {
 		setViewport(workbench.centralPane(), false);
 		outlineViewport(workbench.centralPane());
-		for (char c : "<Editor>")
+		std::string label("Editing glyph at <address> - " + std::to_string(0) + " bytes");
+		for (char c : label)
 			glutBitmapCharacter(fontNum, c);
 		glTranslatef(workbench.pan.x(), workbench.pan.y(), 0.0f);
 		glScalef(workbench.zoom, workbench.zoom, workbench.zoom);

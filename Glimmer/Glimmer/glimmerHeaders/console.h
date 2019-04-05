@@ -139,12 +139,23 @@ uCode cli::digest(const std::string& token) {
 		}
 		if (!currentTab->unsavedChanges || currentTab->blankFile) {
 			if (currentTab->loadFile(command)) {
-				send_message("Successfully loaded '" + command + '\'', uSuccess);
+				send_message("Editing file '" + command + '\'', uSuccess);
+				currentTab->updateWindowName();
 				return uSuccess;
 			}
 			else {
-				send_message("Error - Could not open " + command + "' for editing", uError);
-				return uError;
+				// Take care not to create a file with a bad extention
+				if (interpretextention(getExtention(command))) {
+					send_message("Editing new file '" + command + '\'', uSuccess);
+					currentTab->unsavedChanges = true;
+					currentTab->updateWindowName();
+					return uSuccess;
+				}
+				else {
+					send_message("Unrecognized file extention - '."
+						+ getExtention(command) + '\'', uError);
+					return uError;
+				}
 			}
 		}
 		else {

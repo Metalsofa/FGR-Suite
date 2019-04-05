@@ -164,12 +164,12 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fgrutils.h" />
     <ClInclude Include="fgrutils\fgrcolor.h" />
     <ClInclude Include="fgrutils\fgrdrawing.h" />
     <ClInclude Include="fgrutils\fgrfileops.h" />
     <ClInclude Include="fgrutils\fgrgeometry.h" />
     <ClInclude Include="fgrutils\fgrclasses.h" />
+    <ClInclude Include="fgrutils\fgrutils.h" />
     <ClInclude Include="fourierHeaders\crypt.h" />
     <ClInclude Include="fourierHeaders\customgl.h" />
     <ClInclude Include="freeglut\include\GL\freeglut.h" />
@@ -183,6 +183,10 @@
   <ItemGroup>
     <None Include="..\..\LICENSE" />
     <None Include="..\..\README.md" />
+    <None Include="eoifjwqoepjfpqwoiejfwe" />
+    <None Include="h" />
+    <None Include="iii" />
+    <None Include="untitled.fgl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="freeglut\Copying.txt" />
