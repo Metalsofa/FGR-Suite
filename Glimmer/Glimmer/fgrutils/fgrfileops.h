@@ -184,8 +184,7 @@ namespace fgr {
 		std::size_t POINTC = obj.size();
 		fwrite(&POINTC, sizeof(std::size_t), 1, stream);
 		//Write in every point, one at a time
-		glyphContainer pointData;
-		for (glyphContainer::const_iterator itr = pointData.begin(); itr != pointData.end(); ++itr) {
+		for (glyphContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
 			fputpoint(*itr, stream);
 		}
 	}
