@@ -260,16 +260,12 @@ namespace fgr {
 	}
 
 	//Accepts two points and an angle, returns the first point rotated by the specified angle about the second.
-	inline point rotateabout(point &arg, point &axis, float &angle) {
-		arg = difference(arg, axis);
-		float theta1 = atan2(arg.y(), arg.x());
+	inline point rotateabout(point& arg, const point &axis, float angle) {
+		arg -= axis;
 		float length = arg.magnitude();
-		float theta2 = theta1 + angle;
-		float x2 = length * cos(theta2);
-		float y2 = length * sin(theta2);
-		point newp(x2, y2);
-		newp = combine(newp, axis);
-		return newp;
+		float newTheta = arg.angle() + angle;
+		point newp(length * cos(newTheta), length * sin(newTheta));
+		return (newp + axis);
 	}
 
 	class segment {
@@ -410,7 +406,7 @@ namespace fgr {
 	inline float distancetoseg(const point& dot, const segment& seg) {
 		//First we see if the perpendicular line to the segment even hits it.
 		if (!isperpintersect(dot, seg)) {
-			return std::min(
+			return (std::min)(
 				difference(dot, seg.p1).magnitude(),
 				difference(dot, seg.p2).magnitude()
 			);

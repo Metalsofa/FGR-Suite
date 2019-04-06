@@ -133,21 +133,26 @@ uCode cli::digest(const std::string& token) {
 	}
 	//Edit (open)
 	if (command == "e") {
+		//Ensure a filename was specified
 		if (!(input >> command)) {
 			send_message("Usage: :edit <filename>", uIncorrectUsage);
 			return uIncorrectUsage;
 		}
+		//Ensure changes were saved
 		if (!currentTab->unsavedChanges || currentTab->blankFile) {
+			//Try to load an existing file with the given name
 			if (currentTab->loadFile(command)) {
 				send_message("Editing file '" + command + '\'', uSuccess);
 				currentTab->updateWindowName();
 				return uSuccess;
 			}
+			//Otherwise make a new file
 			else {
-				// Take care not to create a file with a bad extention
-				if (interpretextention(getExtention(command))) {
+				//Ensure the provided file extention is valid
+				if (interpretExtention(getExtention(command))) {
+					//Make a new file of the requested type
 					send_message("Editing new file '" + command + '\'', uSuccess);
-					currentTab->unsavedChanges = true;
+					currentTab->newFile(interpretExtention(getExtention(command)));
 					currentTab->updateWindowName();
 					return uSuccess;
 				}
