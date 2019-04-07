@@ -31,6 +31,9 @@
     <Filter Include="FGRs">
       <UniqueIdentifier>{5dee2b64-af86-4af9-ae04-96c97ca287be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\freeglut win32 API">
+      <UniqueIdentifier>{b4e71d80-0314-4bab-be8b-655b373549cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -85,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="freeglut_win32_API\freeglut32.h">
+      <Filter>Header Files\freeglut win32 API</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

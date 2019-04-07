@@ -210,7 +210,7 @@ namespace  fgr {
 	//Use openGL to render a glyph at the origin of the matrix
 	void draw(const fgr::glyph &obj) {
 		glBegin(obj.mode);
-		obj.applyToAll(glVertexPoint);
+			obj.applyToAll(glVertexPoint);
 		glEnd();
 	}
 

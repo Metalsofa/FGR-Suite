@@ -133,21 +133,26 @@ uCode cli::digest(const std::string& token) {
 	}
 	//Edit (open)
 	if (command == "e") {
+		//Ensure a filename was specified
 		if (!(input >> command)) {
-			send_message("Usage: :edit <filename>", uIncorrectUsage);
+			send_message("Usage is :edit <filename>", uIncorrectUsage);
 			return uIncorrectUsage;
 		}
+		//Ensure changes were saved
 		if (!currentTab->unsavedChanges || currentTab->blankFile) {
+			//Try to load an existing file with the given name
 			if (currentTab->loadFile(command)) {
 				send_message("Editing file '" + command + '\'', uSuccess);
 				currentTab->updateWindowName();
 				return uSuccess;
 			}
+			//Otherwise make a new file
 			else {
-				// Take care not to create a file with a bad extention
-				if (interpretextention(getExtention(command))) {
+				//Ensure the provided file extention is valid
+				if (interpretExtention(getExtention(command))) {
+					//Make a new file of the requested type
 					send_message("Editing new file '" + command + '\'', uSuccess);
-					currentTab->unsavedChanges = true;
+					currentTab->newFile(interpretExtention(getExtention(command)));
 					currentTab->updateWindowName();
 					return uSuccess;
 				}
@@ -163,7 +168,21 @@ uCode cli::digest(const std::string& token) {
 			return uWarning;
 		}
 	}
-
+	//Change current glyph GL Mode
+	if (command == "mode") {
+		//Ensure another mode was specified
+		if (input >> command) {
+			int interpretation = (std::stoi(command) % 10);
+			//For now, interpret as plan integer
+			currentTab->currentGlyph().mode = static_cast<fgr::GLmode>(interpretation);
+			send_message("Glyph GL Mode set to " + std::string(currentTab->currentGlyph().glModeString()), uSuccess);
+			return uSuccess;
+		}
+		else {
+			send_message("Usage is :mode <GLModename/GLModeNum>", uIncorrectUsage);
+			return uIncorrectUsage;
+		}
+	}
 	//Err - invalid command
 	send_message("Invalid command - " + command, uInvalid);
 	return uInvalid;

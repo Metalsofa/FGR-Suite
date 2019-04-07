@@ -20,32 +20,18 @@ namespace fgr {
 		//This is the point that will be returned
 		float buffer[2];
 		fread(buffer, sizeof(float), 2, stream);
+		std::cout << ferror(stream) << ' ' << feof(stream);
 		return point(buffer[0], buffer[1]);
 	}
 
-
-	////////////////////////////////////////////////////////////////////////
-	//		ORDERED CONTAINER CLASS BINARY STRUCTURE
-	//
-	//	| STD::SIZE_T OBJECTCOUNT | <OBJECTS> |
-	//
-
-	//This function is not yet properly implemented. Maybe don't use it.
-
-	/* Get a vector, list, etc. of class instances from a filestream. A function
-	must be specified for reading in an individual instance of said class */
-	template <class entry, class container>
-	container fgetcontainer(FILE*& stream, entry(*fgetfunc)(FILE*&)) {
-		//Read in the object count
-		std::size_t objc;
-		fread(&objc, sizeof(std::size_t), 1, stream);
-		//Read in the container and fill it up
-		container retc;
-		for (std::size_t i = 0; i < objc; ++i) {
-			retc.push_back(fgetfunc(stream));
-		}
-		return retc;
+	//Put a point into a filestream, and advance the internal position indicator by that many bytes
+	void fputpoint(const point& obj, FILE*& stream) {
+		//This is the point that will be returned
+		float buffer[2] = { obj.x(), obj.y() };
+		fwrite(buffer, sizeof(float), 2, stream);
+		std::cout << "POINT " << ferror(stream) << ' ' << feof(stream) << std::endl;
 	}
+
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//		GLYPH BINARY STRUCTURE
@@ -63,11 +49,31 @@ namespace fgr {
 		fread(&POINTC, sizeof(std::size_t), 1, stream);
 		//Read in every point, one at a time
 		glyphContainer pointData;
+		std::cout << "Reading " << POINTC << " points:" << std::endl;
 		for (std::size_t i = 0; i < POINTC; ++i) {
+			std::cout << i << ':';
 			pointData.push_back(fgetpoint(stream));
+			std::cout << pointData.back().label() << '\n';
 		}
+		std::cout << std::endl;
 		//Construct and return the glyph object
 		return glyph(GLMODE, pointData);
+	}
+
+	//Put a glyph into a file stream
+	void fputglyph(const glyph& obj, FILE*& stream) {
+		//Write in the GLmode of this glyph
+		fwrite(&obj.mode, sizeof(GLmode), 1, stream);
+		//Write in the number of points in the glyph
+		std::size_t POINTC = obj.size();
+		fwrite(&POINTC, sizeof(std::size_t), 1, stream);
+		//Write in every point, one at a time
+		std::cout << "Writing " << obj.size() << " points:" << std::endl;
+		for (glyphContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
+			fputpoint(*itr, stream);
+			std::cout << itr->label() << '\t';
+		}
+		std::cout << std::endl;
 	}
 
 
@@ -84,6 +90,13 @@ namespace fgr {
 		fread(input, sizeof(float), 4, stream);
 		//Construct and return the fcolor
 		return fcolor(input[0], input[1], input[2], input[3]);
+	}
+	
+	//Put an fcolor into a file stream
+	void fputfcolor(const fcolor& col, FILE*& stream) {
+		//Write in the colors
+		float input[4] = { col.getLevel('r'), col.getLevel('g'), col.getLevel('b'), col.getLevel('a') };
+		fwrite(input, sizeof(float), 4, stream);
 	}
 
 
@@ -105,7 +118,17 @@ namespace fgr {
 		//Construct and return the shape
 		return shape(pointdata, color, weightdata[0], weightdata[1]);
 	}
-
+	
+	//Put a shape into a file stream
+	void fputshape(const shape& obj, FILE*& stream) {
+		//Write in the fcolor
+		fputfcolor(obj.color, stream);
+		//Write in the linethickness and pointsize
+		float weightdata[2] = { obj.lineThickness, obj.pointSize };
+		fwrite(weightdata, sizeof(float), 2, stream);
+		//Write in the point data
+		fputglyph(obj, stream);
+	}
 
 	/////////////////////////////////////////
 	//		GRAPHIC BINARY STRUCTURE
@@ -127,6 +150,18 @@ namespace fgr {
 		return graphic(shapedata);
 	}
 
+	//Put a graphic into a file stream
+	void fputgraphic(const graphic& obj, FILE*& stream) {
+		//Write in the size type
+		std::size_t shapecount = obj.size();
+		fwrite(&shapecount, sizeof(std::size_t), 1, stream);
+		//Write in the shapes
+		for (graphicContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
+			fputshape(*itr, stream);
+		}
+	}
+
+
 	///NOTE TO SELF: I'm slightly worried about signed/unsigned binary reading. If you run into problems, be sure to check on that.
 	/////////////////////////////////////////////////////////////////////////////////
 	//		FRAME BINARY STRUCTURE
@@ -141,6 +176,15 @@ namespace fgr {
 		fread(&delay, sizeof(int), 1, stream);
 		//Read in the graphic, construct and return the frame
 		return frame(delay, fgetgraphic(stream));
+	}
+	
+	//Put a frame of an animtion into a file stream
+	void fputframe(const frame& obj, FILE*& stream) {
+		//Write in the delay
+		int delay;
+		fwrite(&delay, sizeof(int), 1, stream);
+		//Write in the graphic, construct and return the frame
+		fputgraphic(obj, stream);
 	}
 
 
@@ -166,69 +210,6 @@ namespace fgr {
 		return animation(cycle, frameData);
 	}
 
-
-	////////// FILE WRITING OPERATIONS //////////
-
-	//Put a point into a filestream, and advance the internal position indicator by that many bytes
-	void fputpoint(const point& obj, FILE*& stream) {
-		//This is the point that will be returned
-		float buffer[2] = { obj.x(), obj.y() };
-		fwrite(buffer, sizeof(float), 2, stream);
-	}
-
-	//Put a glyph into a file stream
-	void fputglyph(const glyph& obj, FILE*& stream) {
-		//Write in the GLmode of this glyph
-		fwrite(&obj.mode, sizeof(GLmode), 1, stream);
-		//Write in the number of points in the glyph
-		std::size_t POINTC = obj.size();
-		fwrite(&POINTC, sizeof(std::size_t), 1, stream);
-		//Write in every point, one at a time
-		glyphContainer pointData;
-		for (glyphContainer::const_iterator itr = pointData.begin(); itr != pointData.end(); ++itr) {
-			fputpoint(*itr, stream);
-		}
-	}
-
-	//Put an fcolor into a file stream
-	void fputfcolor(const fcolor& col, FILE*& stream) {
-		//Write in the colors
-		float input[4] = { col.getLevel('r'), col.getLevel('g'), col.getLevel('b'), col.getLevel('a') };
-		fwrite(input, sizeof(float), 4, stream);
-	}
-
-	//Put a shape into a file stream
-	void fputshape(const shape& obj, FILE*& stream) {
-		//Write in the fcolor
-		fputfcolor(obj.color, stream);
-		//Write in the linethickness and pointsize
-		float weightdata[2] = { obj.lineThickness, obj.pointSize };
-		fwrite(weightdata, sizeof(float), 2, stream);
-		//Write in the point data
-		fputglyph(obj, stream);
-	}
-
-	//Put a graphic into a file stream
-	void fputgraphic(const graphic& obj, FILE*& stream) {
-		//Write in the size type
-		std::size_t shapecount = obj.size();
-		fwrite(&shapecount, sizeof(std::size_t), 1, stream);
-		//Write in the shapes
-		for (graphicContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
-			fputshape(*itr, stream);
-		}
-	}
-
-
-	//Put a frame of an animtion into a file stream
-	void fputframe(const frame& obj, FILE*& stream) {
-		//Write in the delay
-		int delay;
-		fwrite(&delay, sizeof(int), 1, stream);
-		//Write in the graphic, construct and return the frame
-		fputgraphic(obj, stream);
-	}
-
 	//Put an animation into a file stream
 	void fputanimation(const animation& obj, FILE*& stream) {
 		//Write in 'cycle'
@@ -243,7 +224,6 @@ namespace fgr {
 			fputframe(*itr, stream);
 		}
 	}
-
 
 
 	///////////////////// SLIGHTLY MORE USER-FRIENDLY FILE READING/WRITING FUNCITONS //////////////////////////

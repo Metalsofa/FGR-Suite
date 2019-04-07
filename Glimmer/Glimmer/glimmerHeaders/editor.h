@@ -43,7 +43,7 @@ std::pair<std::string, std::string> splitPath(const std::string& path) {
 }
 
 //Returns an editor type by interpreting a std::string as a file extention
-editortype interpretextention(const std::string& ext) {
+editortype interpretExtention(const std::string& ext) {
 	if (ext == "fgl")
 		return eGlyph;
 	if (ext == "fsh")
@@ -126,11 +126,39 @@ public:
 	GLint bottom() const {
 		return y;
 	}
+	//Check if a particular pixel lies in the bounds of this pane
+	bool contains(int x, int y) const {
+		return ( x > left() && x < right()
+			&& y > bottom() && y < top() );
+	}
 };
 
 viewport superWindowPane() {
 	return viewport(0, 0, windowWidth, windowHeight);
 }
+
+//Enumerate the various reigons of the screen
+enum reigonNum { rInconclusive, rCommandLine, rFileTree, rTabHeader, rAnimationFrames, rLayers, 
+	rShapes, rShapeProperties, rGlyphGLMode, rTools, rCentral };
+
+//Enumerate tools
+enum toolNum { 
+//Glyph or higher
+	tNULL,				//No function
+	tAppend,			//Add vertices at end
+	tInsert,			//Insert vertices on nearest edge
+	tDeletePoint,		//Remove points closest to cursor
+	tMovePoint,			//Move the point closest to the cursor
+	tSelectPoints,		//Select many vertices using rect-selection, or clicking them individually
+	tSelectionManip,	//Move, rotate, scale, copy, paste, etc. the selected vertices
+
+	tBrush,				//Place vertices semi-continuously as the mouse moves across the canvas
+//Graphic or higher
+	tSever,				//Make an incision on an edge to separate a shape into two shapes
+	tSelectShapes,		//Select vertices one shape at a time
+
+
+};
 
 //Think of these like tabs
 class editor {
@@ -157,6 +185,9 @@ public:
 	fgr::point pan;
 	float zoom;
 	float rotation;
+	//What tool is currently selected
+	toolNum currentTool;
+
 	// Settings as to whether different editor panes are open, and their sizes when open
 	//COMMAND LINE (BOTTOM)
 		bool showCommandLine;
@@ -196,6 +227,7 @@ public:
 		bool showTools;
 		GLint toolsWidth;
 		fgr::fcolor toolsColor;
+
 	// CONSTRUCTORS
 	//Default constructor
 	editor() {
@@ -226,8 +258,7 @@ public:
 		animArt =		NULL;
 		defaultSettings();
 		configureLayout(format_);
-		newfile(format_);
-		unsavedChanges = true;
+		newFile(format_);
 	}
 	//Copy constructor
 	editor(const editor& other) {
@@ -250,6 +281,9 @@ public:
 		//  LATER THIS HAS TO BE EXPANDED.
 		defaultSettings();
 	}
+
+	// FILE/INITIALIZATION METHODS
+	void newFile(editortype filetype);
 	//Returns false if the extention is not recognized or the file contains a segmentation problem
 	bool loadFile(const std::string& filepath);
 	//Save the current artwork into a file
@@ -269,41 +303,9 @@ public:
 		return splitPath(filepath).second;
 	}
 	//Set settings to their defaults
-	void defaultSettings() {
-		//Default editor pane settings
-		pan = fgr::point();
-		zoom = 0;
-		rotation = 0;
-		//Default booleans
-		showFileTree =				true;
-		showTabHeader =				true;
-		showGlyphGLMode =			true;
-		showTools =					true;
-		showCommandLine =			true;
-		//Default colors
-		commandLineColor =			fgr::fcolor(0.0f, 0.0f, 0.0f);
-		fileTreeColor =				fgr::fcolor(0.2f, 0.2f, 0.2f);
-		tabHeaderColor =			fgr::fcolor(0.7f, 0.7f, 0.7f);
-		animationFramesColor =		fgr::fcolor(0.3f, 0.3f, 0.3f);
-		layersColor =				fgr::fcolor(0.4f, 0.4f, 0.4f);
-		shapesColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
-		shapeColorColor =			fgr::fcolor(0.4f, 0.4f, 0.4f);
-		shapeSpecificationsColor =	fgr::fcolor(0.4f, 0.4f, 0.4f);
-		glyphGLModeColor =			fgr::fcolor(0.6f, 0.6f, 0.6f);
-		toolsColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
-		//Default sizes
-		commandLineHeight =			24;
-		fileTreeWidth =				200;
-		tabHeaderHeight =			50;
-		animationFramesWidth =		100;
-		layersWidth =				100;
-		shapesWidth =				100;
-		shapePropertiesHeight =		100;
-		shapeColorWidth =			200;
-		glyphGLModeHeight =			commandLineHeight;
-		toolsWidth =				100;
-	}
-	// The following functions are meant to provide information about the layout
+	void defaultSettings();
+
+	// LAYOUT INFORMATION ACCESSORS
 	//Bottom-side command line interface
 	viewport commandLinePane() const {
 		return viewport(superWindowPane().left(), superWindowPane().bottom(), superWindowPane().right(), commandLineHeight, showCommandLine);
@@ -352,43 +354,154 @@ public:
 	viewport centralPane() const {
 		return viewport(shapesPane().right(), glyphGLModePane().top(), toolsPane().left() - shapesPane().right(), tabHeaderPane().bottom() - glyphGLModePane().top());
 	}
+
 	// DESTRUCTOR
 	//Deletes all art before going out of scope
 	~editor() {
 		deleteAllArt();
 	}
-	// OTHER METHODS
-	//Load an empty file of a given kind, which will cause loss of unsaved changes
-	void newfile(editortype filetype) {
-		deleteAllArt();
-		configureLayout(filetype);
-		filepath = "untitled." + associatedExtention(filetype);
-		unsavedChanges = true;
-		switch (filetype) {
-		case eAnimation:
-			animArt = new fgr::animation;
-			break;
-		default:
-		case eGraphic:
-			graphicArt = new fgr::graphic;
-			break;
-		case eShape:
-			shapeArt = new fgr::shape;
-			break;
-		case eGlyph:
-			glyphArt = new fgr::glyph;
-			break;
-		}
-	}
+
 	// EDITING FUNCTIONALITIES
 	//Editing to the selected shape/glyph should always be done through this
 	fgr::glyph& currentGlyph() const;
+	//This function is applied to transform the matrix to its default zoom, considered 100%
+	void baseTransform() const;
+	//Assuming correct translations/viewport, draw the editor contents.
+	void renderArt() const;
+	//The is the base scaling factor
+	float basefactor() const { return 1.0f / float(centralPane().width); }
+	//Aspect ratio of the central pane, as y/x
+	float aspectRatio() const { return float(centralPane().height) / float(centralPane().width); }
+	//Maps a pixel-position to an in-editor coordinate position
+	fgr::point mapPixel(int x, int y) const {
+		y = superWindowPane().top() - y;
+		fgr::point retp(float(x - centralPane().left()), float(y - centralPane().bottom()));
+		retp *= basefactor();
+		retp -= fgr::point(0.5f, 0.5f * aspectRatio());
+		retp /= zoom;
+		retp += pan;
+		fgr::rotateabout(retp, fgr::point(0.0f, 0.0f), rotation); //Not working quite right
+		return retp;
+	}
+	//Add a point to the glyph
+	void pushBackPoint(int x, int y) {
+		currentGlyph().push_back(mapPixel(x, y));
+	}
+	//Get the ID of the reigon a particular pixel is in
+	reigonNum reigonID(int x, int y) {
+		//Transform the y-coordinate
+		y = superWindowPane().top() - y;
+		//Check every reigon
+		if (centralPane().contains(x, y))
+			return rCentral;
+		if (animationFramesPane().contains(x, y))
+			return rAnimationFrames;
+		if (commandLinePane().contains(x, y))
+			return rCommandLine;
+		if (fileTreePane().contains(x, y))
+			return rFileTree;
+		if (glyphGLModePane().contains(x, y))
+			return rGlyphGLMode;
+		if (layersPane().contains(x, y))
+			return rLayers;
+		if (shapePropertiesPane().contains(x, y))
+			return rShapeProperties;
+		if (shapesPane().contains(x, y))
+			return rShapes;
+		if (tabHeaderPane().contains(x, y))
+			return rTabHeader;
+		if (toolsPane().contains(x, y))
+			return rTools;
+		return rInconclusive;
+	}
+	//Zoom in
+	void zoomIn() {
+		if (zoom < 240.0f)
+			zoom += 0.1f;
+	}
+	//Zoom out
+	void zoomOut() {
+		if (zoom > 0.1f)
+			zoom -= 0.1f;
+		if (zoom < 0.1f)
+			zoom = 0.1f;
+	}
 };
+
+//Get the matrix primed for art rendering (not applying user-specified transformations yet)
+void editor::baseTransform() const {
+	glTranslatef(float(centralPane().left()), float(centralPane().bottom()), 0.0f);
+	glScalef(1.0f / basefactor(), 1.0f / basefactor(), 1.0f);
+	glTranslatef(0.5f, 0.5f * aspectRatio(), 0.0f);
+}
+
+//Load set the properties of this editor to their default values
+void editor::defaultSettings() {
+	//Default editor pane settings
+	pan = fgr::point();
+	zoom = 1.0f;
+	rotation = 0;
+	//Default booleans
+	showFileTree =				true;
+	showTabHeader =				true;
+	showGlyphGLMode =			true;
+	showTools =					true;
+	showCommandLine =			true;
+	//Default colors
+	commandLineColor =			fgr::fcolor(0.0f, 0.0f, 0.0f);
+	fileTreeColor =				fgr::fcolor(0.2f, 0.2f, 0.2f);
+	tabHeaderColor =			fgr::fcolor(0.7f, 0.7f, 0.7f);
+	animationFramesColor =		fgr::fcolor(0.3f, 0.3f, 0.3f);
+	layersColor =				fgr::fcolor(0.4f, 0.4f, 0.4f);
+	shapesColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
+	shapeColorColor =			fgr::fcolor(0.4f, 0.4f, 0.4f);
+	shapeSpecificationsColor =	fgr::fcolor(0.4f, 0.4f, 0.4f);
+	glyphGLModeColor =			fgr::fcolor(0.6f, 0.6f, 0.6f);
+	toolsColor =				fgr::fcolor(0.3f, 0.3f, 0.3f);
+	//Default sizes
+	commandLineHeight =			24;
+	fileTreeWidth =				200;
+	tabHeaderHeight =			50;
+	animationFramesWidth =		100;
+	layersWidth =				100;
+	shapesWidth =				100;
+	shapePropertiesHeight =		100;
+	shapeColorWidth =			200;
+	glyphGLModeHeight =			commandLineHeight;
+	toolsWidth =				100;
+	//Default tool
+	currentTool = tAppend;
+}
+
+//Load an empty file of a given kind, which will cause loss of unsaved changes
+void editor::newFile(editortype filetype) {
+	deleteAllArt();
+	configureLayout(filetype);
+	filepath = "untitled." + associatedExtention(filetype);
+	unsavedChanges = true;
+	blankFile = false;
+	switch (filetype) {
+	case eAnimation:
+		animArt = new fgr::animation;
+		break;
+	default:
+	case eGraphic:
+		graphicArt = new fgr::graphic;
+		break;
+	case eShape:
+		shapeArt = new fgr::shape;
+		break;
+	case eGlyph:
+		glyphArt = new fgr::glyph;
+		break;
+	}
+}
 
 /* Editing to the selected shape/glyph should always be done through this.
  * Be sure to update the 'blankFile' flag to false if something is changed!
  * As well as the 'unsavedChanges' flag!!!! */
 fgr::glyph& editor::currentGlyph() const {
+	return *glyphArt;
 	switch (format) {
 	case eSpritesheet:
 		//NOT YET SUPPORTED
@@ -479,33 +592,38 @@ void editor::updateWindowName() const {
 //Be very careful - this function does not save any progress first. It's primary purpose
 //is to prevent memory leaks
 void editor::deleteAllArt() {
-	//How this is handled depends on the editor type
+	/*How this is handled depends on the editor type:
+	 *	Of the art pointers, only one corresponds to something that ever be
+	 *	deleted or copied. This is the highest-level art, or the one matching 'format.'
+	 *	The rest should be set to null rather than deleted, or re-found rather than
+	 *	copied.
+	 */
 	switch (format) {
 	case eAnimation:
-		if (animArt)
+		if (format == eAnimation && animArt)
 			delete animArt;
 		animArt = NULL;
 	case eGraphic:
-		if (graphicArt)
+		if (format == eGraphic && graphicArt)
 			delete graphicArt;
 		graphicArt = NULL;
 	case eShape:
-		if (shapeArt)
+		if (format == eShape && shapeArt)
 			delete shapeArt;
 		shapeArt = NULL;
 	case eGlyph:
-		if (glyphArt)
+		if (format == eGlyph && glyphArt)
 			delete glyphArt;
 		glyphArt = NULL;
 	}
 	unsavedChanges = false;
-	assert(!(glyphArt || shapeArt || graphicArt || animArt) && "All art deleted from heap.");
+	assert(!(glyphArt || shapeArt || graphicArt || animArt) && "Bad logic - not all pointer nullified.");
 	return;
 }
 
 //Write the current artwork to a particular file path
 bool editor::save(const std::string& path) {
-	editortype targetFiletype = interpretextention(getExtention(path));
+	editortype targetFiletype = interpretExtention(getExtention(path));
 	filepath = path;
 	//If the target extention is different from the current one,
 	if (format != targetFiletype) {
@@ -546,7 +664,7 @@ bool editor::save() {
 //Be careful - this will cause any unsaved changes to be lost.
 bool editor::loadFile(const std::string& path) {
 	//Figure out what format this editor should be from the file extention
-	editortype artform = interpretextention(getExtention(path));
+	editortype artform = interpretExtention(getExtention(path));
 	//Error-check the provided file extention
 	if (!artform)
 		return false;
@@ -631,6 +749,35 @@ void setViewport(const viewport& rectangle, bool fillscreen = true) {
 	glRasterPos2i(rectangle.left() + 4, rectangle.top() - (18 - 1));
 }
 
+//This function assumes correct translation/viewport has been set, and prepares to
+//draw the contents of the editor window
+void editor::renderArt() const {
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glBegin(GL_LINES);
+		glVertex2f(pan.y() - zoom, 0);
+		glVertex2f(pan.y() + zoom, 0);
+		glVertex2f(0, -1);
+		glVertex2f(0, 1);
+	glEnd();
+	switch (format)
+	{
+	case eAnimation:
+		fgr::draw(*animArt);
+		break;
+	case eGraphic:
+		fgr::draw(*graphicArt);
+		break;
+	case eShape:
+		fgr::draw(*shapeArt);
+		break;
+	case eGlyph:
+		fgr::draw(*glyphArt);
+		break;
+	default:
+		assert(0 && "INVALID GRAPHIC TYPE");
+	}
+}
+
 //Draw render an editor using OpenGL instructions
 void drawEditor(const editor& workbench) {
 	void* fontNum = GLUT_BITMAP_HELVETICA_18;
@@ -710,32 +857,19 @@ void drawEditor(const editor& workbench) {
 	}
 	//Draw the central editor
 	if (true) {
-		setViewport(workbench.centralPane(), false);
-		outlineViewport(workbench.centralPane());
-		std::string label("Editing glyph at <address> - " + std::to_string(0) + " bytes");
-		for (char c : label)
-			glutBitmapCharacter(fontNum, c);
-		glTranslatef(workbench.pan.x(), workbench.pan.y(), 0.0f);
-		glScalef(workbench.zoom, workbench.zoom, workbench.zoom);
-		glRotatef(workbench.rotation, 0.0f, 0.0f, 1.0f);
-		switch (workbench.format)
-		{
-		case eAnimation:
-			fgr::draw(*workbench.animArt);
-			break;
-		case eGraphic:
-			fgr::draw(*workbench.graphicArt);
-			break;
-		case eShape:
-			fgr::draw(*workbench.shapeArt);
-			break;
-		case eGlyph:
-			fgr::draw(*workbench.glyphArt);
-			break;
-		default:
-			assert(0 && "INVALID GRAPHIC TYPE");
-		}
-
+		glPushMatrix();
+			setViewport(workbench.centralPane(), false);
+			std::string label("Editing glyph - " + std::to_string(workbench.glyphArt->size()) 
+				+ " vertices - zoom = " + std::to_string(workbench.zoom));
+			for (char c : label)
+				glutBitmapCharacter(fontNum, c);
+			//Apply base transformations
+			workbench.baseTransform();
+			glTranslatef(workbench.pan.x(), workbench.pan.y(), 0.0f);
+			glScalef(workbench.zoom, workbench.zoom, 1.0f);
+			glRotatef(workbench.rotation /fgr::PI * 180.0f, 0.0f, 0.0f, 1.0f);
+			workbench.renderArt();
+		glPopMatrix();
 	}
 }
 
