@@ -29,7 +29,7 @@ namespace fgr {
 		//This is the point that will be returned
 		float buffer[2] = { obj.x(), obj.y() };
 		fwrite(buffer, sizeof(float), 2, stream);
-		std::cout << "POINT " << ferror(stream) << ' ' << feof(stream) << std::endl;
+		std::cout << "POINT " << ferror(stream) << ' ' << feof(stream) << "   " << ftell(stream) << "  "<< sizeof(buffer) << std::endl;
 	}
 
 
@@ -42,20 +42,16 @@ namespace fgr {
 	//Get a glyph from a file stream
 	glyph fgetglyph(FILE*& stream) {
 		//Read in the GLmode of this glyph
-		GLmode GLMODE;
+		GLmode GLMODE = glPoints;
 		fread(&GLMODE, sizeof(GLmode), 1, stream);
 		//Read in the number of points in the glyph
 		std::size_t POINTC;
 		fread(&POINTC, sizeof(std::size_t), 1, stream);
 		//Read in every point, one at a time
 		glyphContainer pointData;
-		std::cout << "Reading " << POINTC << " points:" << std::endl;
 		for (std::size_t i = 0; i < POINTC; ++i) {
-			std::cout << i << ':';
 			pointData.push_back(fgetpoint(stream));
-			std::cout << pointData.back().label() << '\n';
 		}
-		std::cout << std::endl;
 		//Construct and return the glyph object
 		return glyph(GLMODE, pointData);
 	}
@@ -68,12 +64,9 @@ namespace fgr {
 		std::size_t POINTC = obj.size();
 		fwrite(&POINTC, sizeof(std::size_t), 1, stream);
 		//Write in every point, one at a time
-		std::cout << "Writing " << obj.size() << " points:" << std::endl;
 		for (glyphContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
 			fputpoint(*itr, stream);
-			std::cout << itr->label() << '\t';
 		}
-		std::cout << std::endl;
 	}
 
 
@@ -231,8 +224,9 @@ namespace fgr {
 	//Reads a glyph out of the specified path and assigns it to the glyph refrence passed in
 	bool glyphFromFile(glyph& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "r");
+		fopen_s(&fgrfile, path.c_str(), "rb");
 		if (!fgrfile) return false;
+		std::cout << "BEG: " << ftell(fgrfile) << std::endl;
 		art = fgetglyph(fgrfile);
 		fclose(fgrfile);
 		return true;
@@ -241,7 +235,7 @@ namespace fgr {
 	//Writes a glyph object to a particular file path
 	bool glyphToFile(const glyph& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "w");
+		fopen_s(&fgrfile, path.c_str(), "wb");
 		if (!fgrfile) return false;
 		fputglyph(art, fgrfile);
 		fclose(fgrfile);
@@ -251,7 +245,7 @@ namespace fgr {
 	//Reads a shape out of the specified path and assigns it to the shape refrence passed in
 	bool shapeFromFile(shape& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "r");
+		fopen_s(&fgrfile, path.c_str(), "rb");
 		if (!fgrfile) return false;
 		art = fgetshape(fgrfile);
 		fclose(fgrfile);
@@ -261,7 +255,7 @@ namespace fgr {
 	//Writes a shape object to a particular file path
 	bool shapeToFile(const shape& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "w");
+		fopen_s(&fgrfile, path.c_str(), "wb");
 		if (!fgrfile) return false;
 		fputshape(art, fgrfile);
 		fclose(fgrfile);
@@ -271,7 +265,7 @@ namespace fgr {
 	//Reads a graphic out of the specified path and assigns it to the graphic refrence passed in
 	bool graphicFromFile(graphic& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "r");
+		fopen_s(&fgrfile, path.c_str(), "rb");
 		if (!fgrfile) return false;
 		art = fgetgraphic(fgrfile);
 		fclose(fgrfile);
@@ -281,7 +275,7 @@ namespace fgr {
 	//Writes a graphic object to a particular file path
 	bool graphicToFile(const graphic& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "w");
+		fopen_s(&fgrfile, path.c_str(), "wb");
 		if (!fgrfile) return false;
 		fputgraphic(art, fgrfile);
 		fclose(fgrfile);
@@ -291,7 +285,7 @@ namespace fgr {
 	//Reads an animation out of the specified path and assigns it to the animation refrence passed in
 	bool animationFromFile(animation& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "r");
+		fopen_s(&fgrfile, path.c_str(), "rb");
 		if (!fgrfile) return false;
 		art = fgetanimation(fgrfile);
 		fclose(fgrfile);
@@ -301,7 +295,7 @@ namespace fgr {
 	//Writes an animation object to a particular file path
 	bool animationToFile(const animation& art, const std::string& path) {
 		FILE* fgrfile;
-		fopen_s(&fgrfile, path.c_str(), "w");
+		fopen_s(&fgrfile, path.c_str(), "wb");
 		if (!fgrfile) return false;
 		fputanimation(art, fgrfile);
 		fclose(fgrfile);

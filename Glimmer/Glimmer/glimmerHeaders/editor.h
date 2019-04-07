@@ -386,6 +386,8 @@ public:
 	//Add a point to the glyph
 	void pushBackPoint(int x, int y) {
 		currentGlyph().push_back(mapPixel(x, y));
+		unsavedChanges = true;
+		return;
 	}
 	//Get the ID of the reigon a particular pixel is in
 	reigonNum reigonID(int x, int y) {
