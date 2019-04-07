@@ -9,6 +9,7 @@ std::string sessionFilePath;
 //Custom header includes
 //#include "crypt.h"
 #include "fgrutils.h"
+GLint mouseStates[3] = { GLUT_UP, GLUT_UP, GLUT_UP };
 #include "customgl.h"
 #include "editor.h"
 

@@ -135,7 +135,7 @@ uCode cli::digest(const std::string& token) {
 	if (command == "e") {
 		//Ensure a filename was specified
 		if (!(input >> command)) {
-			send_message("Usage: :edit <filename>", uIncorrectUsage);
+			send_message("Usage is :edit <filename>", uIncorrectUsage);
 			return uIncorrectUsage;
 		}
 		//Ensure changes were saved
@@ -168,7 +168,21 @@ uCode cli::digest(const std::string& token) {
 			return uWarning;
 		}
 	}
-
+	//Change current glyph GL Mode
+	if (command == "mode") {
+		//Ensure another mode was specified
+		if (input >> command) {
+			int interpretation = (std::stoi(command) % 10);
+			//For now, interpret as plan integer
+			currentTab->currentGlyph().mode = static_cast<fgr::GLmode>(interpretation);
+			send_message("Glyph GL Mode set to " + std::string(currentTab->currentGlyph().glModeString()), uSuccess);
+			return uSuccess;
+		}
+		else {
+			send_message("Usage is :mode <GLModename/GLModeNum>", uIncorrectUsage);
+			return uIncorrectUsage;
+		}
+	}
 	//Err - invalid command
 	send_message("Invalid command - " + command, uInvalid);
 	return uInvalid;

@@ -126,14 +126,39 @@ public:
 	GLint bottom() const {
 		return y;
 	}
+	//Check if a particular pixel lies in the bounds of this pane
+	bool contains(int x, int y) const {
+		return ( x > left() && x < right()
+			&& y > bottom() && y < top() );
+	}
 };
 
 viewport superWindowPane() {
 	return viewport(0, 0, windowWidth, windowHeight);
 }
 
+//Enumerate the various reigons of the screen
 enum reigonNum { rInconclusive, rCommandLine, rFileTree, rTabHeader, rAnimationFrames, rLayers, 
 	rShapes, rShapeProperties, rGlyphGLMode, rTools, rCentral };
+
+//Enumerate tools
+enum toolNum { 
+//Glyph or higher
+	tNULL,				//No function
+	tAppend,			//Add vertices at end
+	tInsert,			//Insert vertices on nearest edge
+	tDeletePoint,		//Remove points closest to cursor
+	tMovePoint,			//Move the point closest to the cursor
+	tSelectPoints,		//Select many vertices using rect-selection, or clicking them individually
+	tSelectionManip,	//Move, rotate, scale, copy, paste, etc. the selected vertices
+
+	tBrush,				//Place vertices semi-continuously as the mouse moves across the canvas
+//Graphic or higher
+	tSever,				//Make an incision on an edge to separate a shape into two shapes
+	tSelectShapes,		//Select vertices one shape at a time
+
+
+};
 
 //Think of these like tabs
 class editor {
@@ -160,6 +185,8 @@ public:
 	fgr::point pan;
 	float zoom;
 	float rotation;
+	//What tool is currently selected
+	toolNum currentTool;
 
 	// Settings as to whether different editor panes are open, and their sizes when open
 	//COMMAND LINE (BOTTOM)
@@ -347,24 +374,57 @@ public:
 	float aspectRatio() const { return float(centralPane().height) / float(centralPane().width); }
 	//Maps a pixel-position to an in-editor coordinate position
 	fgr::point mapPixel(int x, int y) const {
+		y = superWindowPane().top() - y;
 		fgr::point retp(float(x - centralPane().left()), float(y - centralPane().bottom()));
 		retp *= basefactor();
 		retp -= fgr::point(0.5f, 0.5f * aspectRatio());
-		retp *= zoom;
+		retp /= zoom;
 		retp += pan;
 		fgr::rotateabout(retp, fgr::point(0.0f, 0.0f), rotation); //Not working quite right
 		return retp;
 	}
 	//Add a point to the glyph
 	void pushBackPoint(int x, int y) {
-		currentGlyph().push_back(mapPixel(x, superWindowPane().top() - y));
+		currentGlyph().push_back(mapPixel(x, y));
 	}
 	//Get the ID of the reigon a particular pixel is in
 	reigonNum reigonID(int x, int y) {
+		//Transform the y-coordinate
 		y = superWindowPane().top() - y;
-		if (x > centralPane().left() && x < centralPane().right() && y > centralPane().bottom() && y < centralPane().top())
+		//Check every reigon
+		if (centralPane().contains(x, y))
 			return rCentral;
+		if (animationFramesPane().contains(x, y))
+			return rAnimationFrames;
+		if (commandLinePane().contains(x, y))
+			return rCommandLine;
+		if (fileTreePane().contains(x, y))
+			return rFileTree;
+		if (glyphGLModePane().contains(x, y))
+			return rGlyphGLMode;
+		if (layersPane().contains(x, y))
+			return rLayers;
+		if (shapePropertiesPane().contains(x, y))
+			return rShapeProperties;
+		if (shapesPane().contains(x, y))
+			return rShapes;
+		if (tabHeaderPane().contains(x, y))
+			return rTabHeader;
+		if (toolsPane().contains(x, y))
+			return rTools;
 		return rInconclusive;
+	}
+	//Zoom in
+	void zoomIn() {
+		if (zoom < 240.0f)
+			zoom += 0.1f;
+	}
+	//Zoom out
+	void zoomOut() {
+		if (zoom > 0.1f)
+			zoom -= 0.1f;
+		if (zoom < 0.1f)
+			zoom = 0.1f;
 	}
 };
 
@@ -409,6 +469,8 @@ void editor::defaultSettings() {
 	shapeColorWidth =			200;
 	glyphGLModeHeight =			commandLineHeight;
 	toolsWidth =				100;
+	//Default tool
+	currentTool = tAppend;
 }
 
 //Load an empty file of a given kind, which will cause loss of unsaved changes
@@ -797,7 +859,8 @@ void drawEditor(const editor& workbench) {
 	if (true) {
 		glPushMatrix();
 			setViewport(workbench.centralPane(), false);
-			std::string label("Editing glyph - " + std::to_string(workbench.glyphArt->size()) + " vertices");
+			std::string label("Editing glyph - " + std::to_string(workbench.glyphArt->size()) 
+				+ " vertices - zoom = " + std::to_string(workbench.zoom));
 			for (char c : label)
 				glutBitmapCharacter(fontNum, c);
 			//Apply base transformations
