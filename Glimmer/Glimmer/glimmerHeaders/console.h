@@ -175,6 +175,7 @@ uCode cli::digest(const std::string& token) {
 			int interpretation = (std::stoi(command) % 10);
 			//For now, interpret as plan integer
 			currentTab->currentGlyph().mode = static_cast<fgr::GLmode>(interpretation);
+
 			send_message("Glyph GL Mode set to " + std::string(currentTab->currentGlyph().glModeString()), uSuccess);
 			return uSuccess;
 		}

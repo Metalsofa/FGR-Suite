@@ -8,6 +8,9 @@
 //Note that these are not booleans; if evaluated as such, *down* evaluates to false.
 	//(Now declared in main document)
 
+//Where the mouse was when we last checked, in the order x, y
+int mouseMemory [2];
+
 //GLUT event handler for regular key-presses
 void processNormalKeys(unsigned char key, int x, int y) {
 	if (cli::listening) {
@@ -143,31 +146,33 @@ void rightClick(int x, int y) {
 				currentTab->currentGlyph().back() = currentTab->mapPixel(x, y);
 				renderScene();
 			}
-			return;
+			break;
 		}
+		break;
 	case rAnimationFrames:
-		return;
+		break;
 	case rCommandLine:
-		return;
+		break;
 	case rFileTree:
-		return;
+		break;
 	case rGlyphGLMode:
-		return;
+		break;
 	case rLayers:
-		return;
+		break;
 	case rShapeProperties:
-		return;
+		break;
 	case rShapes:
-		return;
+		break;
 	case rTabHeader:
-		return;
+		break;
 	case rTools:
-		return;
+		break;
 	case rInconclusive:
 		break;
 	default:
 		break;
 	}
+	return;
 }
 
 //GLUT event handler for a mouse click
@@ -199,6 +204,9 @@ void MouseClick(int button, int state, int x, int y) {
 		}
 			break;
 	}
+	//Update mouse memory
+	mouseMemory[0] = x; mouseMemory[1] = y;
+	return;
 }
 
 //GLUT event handler for mouse motion with a mouse-button down
@@ -206,42 +214,55 @@ void ActiveMouseMove(int x, int y) {
 	//Behaviour depends on what pane the motion is in
 	switch (currentTab->reigonID(x, y)) {
 	case rCentral:
+		//If both not both mouse buttons are down, move the last point to the mouse
 		if (!(mouseStates[GLUT_RIGHT_BUTTON] && mouseStates[GLUT_LEFT_BUTTON])) {
+			//If there is a point at all,
 			if (currentTab->currentGlyph().size()) {
 				currentTab->currentGlyph().back() = currentTab->mapPixel(x, y);
 				renderScene();
 			}
 		}
-		return;
+		//If the middle-button is down,
+		if (!mouseStates[GLUT_MIDDLE_BUTTON]) {
+			//Pan an amount equal to the mouse motion
+			currentTab->pan -= (currentTab->mapPixel(x, y) - currentTab->mapPixel(mouseMemory[0], mouseMemory[1])) * currentTab->zoom;
+			renderScene();
+		}
+		break;
 	case rAnimationFrames:
-		return;
+		break;
 	case rCommandLine:
-		return;
+		break;
 	case rFileTree:
-		return;
+		break;
 	case rGlyphGLMode:
-		return;
+		break;
 	case rLayers:
-		return;
+		break;
 	case rShapeProperties:
-		return;
+		break;
 	case rShapes:
-		return;
+		break;
 	case rTabHeader:
-		return;
+		break;
 	case rTools:
-		return;
+		break;
 	case rInconclusive:
 		break;
 	default:
 		break;
 	}
-
+	//Update mouse memory
+	mouseMemory[0] = x; mouseMemory[1] = y;
+	return;
 }
 
 //GLUT event handler for mouse motion with no mouse-button down
 void PassiveMouseMove(int x, int y) {
 
+	//Update mouse memory
+	mouseMemory[0] = x; mouseMemory[1] = y;
+	return;
 }
 
 #endif

@@ -157,7 +157,8 @@ enum toolNum {
 	tSever,				//Make an incision on an edge to separate a shape into two shapes
 	tSelectShapes,		//Select vertices one shape at a time
 
-
+//The value of this enum tells how many tools there are
+	tToolCount
 };
 
 //Think of these like tabs
@@ -378,8 +379,8 @@ public:
 		fgr::point retp(float(x - centralPane().left()), float(y - centralPane().bottom()));
 		retp *= basefactor();
 		retp -= fgr::point(0.5f, 0.5f * aspectRatio());
-		retp /= zoom;
 		retp += pan;
+		retp /= zoom;
 		fgr::rotateabout(retp, fgr::point(0.0f, 0.0f), rotation); //Not working quite right
 		return retp;
 	}
@@ -756,10 +757,10 @@ void setViewport(const viewport& rectangle, bool fillscreen = true) {
 void editor::renderArt() const {
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glBegin(GL_LINES);
-		glVertex2f(pan.y() - zoom, 0);
-		glVertex2f(pan.y() + zoom, 0);
-		glVertex2f(0, -1);
-		glVertex2f(0, 1);
+		glVertex2f((pan.x() - 1) * zoom, 0);
+		glVertex2f((pan.x() + 1) * zoom, 0);
+		glVertex2f(0, (pan.y() - 1) * zoom);
+		glVertex2f(0, (pan.y() + 1) * zoom);
 	glEnd();
 	switch (format)
 	{
@@ -861,13 +862,15 @@ void drawEditor(const editor& workbench) {
 	if (true) {
 		glPushMatrix();
 			setViewport(workbench.centralPane(), false);
-			std::string label("Editing glyph - " + std::to_string(workbench.glyphArt->size()) 
-				+ " vertices - zoom = " + std::to_string(workbench.zoom));
+			std::string label("Vertices - " + std::to_string(workbench.currentGlyph().size()) 
+				+ "\nZoom - " + std::to_string(workbench.zoom) 
+				+ "\nPan - " + workbench.pan.label()
+				+ "\nTool - " + std::to_string(workbench.currentTool));
 			for (char c : label)
 				glutBitmapCharacter(fontNum, c);
 			//Apply base transformations
 			workbench.baseTransform();
-			glTranslatef(workbench.pan.x(), workbench.pan.y(), 0.0f);
+			glTranslatef(-workbench.pan.x(), -workbench.pan.y(), 0.0f);
 			glScalef(workbench.zoom, workbench.zoom, 1.0f);
 			glRotatef(workbench.rotation /fgr::PI * 180.0f, 0.0f, 0.0f, 1.0f);
 			workbench.renderArt();
