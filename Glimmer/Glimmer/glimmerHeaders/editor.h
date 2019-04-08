@@ -757,10 +757,10 @@ void setViewport(const viewport& rectangle, bool fillscreen = true) {
 void editor::renderArt() const {
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glBegin(GL_LINES);
-		glVertex2f((pan.x() - 1) * zoom, 0);
-		glVertex2f((pan.x() + 1) * zoom, 0);
-		glVertex2f(0, (pan.y() - 1) * zoom);
-		glVertex2f(0, (pan.y() + 1) * zoom);
+		glVertex2f((pan.x() - 1) / zoom, 0);
+		glVertex2f((pan.x() + 1) / zoom, 0);
+		glVertex2f(0, (pan.y() - 1) / zoom);
+		glVertex2f(0, (pan.y() + 1) / zoom);
 	glEnd();
 	switch (format)
 	{
