@@ -14,10 +14,12 @@ int mouseMemory [2];
 //GLUT event handler for regular key-presses
 void processNormalKeys(unsigned char key, int x, int y) {
 	if (cli::listening) {
+		// <CR>
 		if (key == 13) {
 			cli::gulp();
 			cli::listening = false;
 		}
+		// <backspace>
 		else if (key == 8) {
 			if (cli::input.size()) {
 				cli::input.pop_back();
@@ -28,14 +30,17 @@ void processNormalKeys(unsigned char key, int x, int y) {
 		else {
 			cli::input.push_back(key);
 		}
-
+		return;
 	}
 	if (key == ':') {
 		cli::listening = true;
 		cli::showLastMessage = false;
 		cli::input.push_back(':');
 	}
+	if (key == '0')
+		cli::digest("fit");
 	renderScene();
+	return;
 }
 
 //GLUT event handler for regular key-releases
@@ -193,14 +198,22 @@ void MouseClick(int button, int state, int x, int y) {
 		break;
 	case 3: //SCROLL UP
 		if (state == GLUT_DOWN) {
-			currentTab->zoomIn();
-			renderScene();
+			switch (currentTab->reigonID(x, y)) {
+			case rCentral:
+				currentTab->zoomIn();
+				renderScene();
+				break;
+			}
 		}
 		break;
 	case 4: //SCROLL DOWN
 		if (state == GLUT_DOWN) {
-			currentTab->zoomOut();
-			renderScene();
+			switch (currentTab->reigonID(x, y)) {
+			case rCentral:
+				currentTab->zoomOut();
+				renderScene();
+				break;
+			}
 		}
 			break;
 	}

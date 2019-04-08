@@ -153,6 +153,7 @@ uCode cli::digest(const std::string& token) {
 					//Make a new file of the requested type
 					send_message("Editing new file '" + command + '\'', uSuccess);
 					currentTab->newFile(interpretExtention(getExtention(command)));
+					currentTab->filepath = command;
 					currentTab->updateWindowName();
 					return uSuccess;
 				}
@@ -168,6 +169,23 @@ uCode cli::digest(const std::string& token) {
 			return uWarning;
 		}
 	}
+	//Reset all transformations
+	if (command == "home" || command == "h") {
+		currentTab->zoom = 0.1f;
+		currentTab->pan = fgr::point();
+		currentTab->rotation = 0.0f;
+		return uSuccess;
+	}
+	//Transform view to fit full graphic
+	if (command == "fit") {
+		if (currentTab->currentGlyph().size()) {
+			fgr::segment fitSeg = currentTab->currentGlyph().bounds();
+			currentTab->zoom = 1.0f / (fmaxf(fitSeg.width(), fitSeg.height() / currentTab->aspectRatio()));
+			currentTab->pan = currentTab->currentGlyph().bounds().midpoint() * currentTab->zoom;
+			return uSuccess;
+		}
+		return uSuccess;
+	}
 	//Change current glyph GL Mode
 	if (command == "mode") {
 		//Ensure another mode was specified
@@ -182,6 +200,36 @@ uCode cli::digest(const std::string& token) {
 		else {
 			send_message("Usage is :mode <GLModename/GLModeNum>", uIncorrectUsage);
 			return uIncorrectUsage;
+		}
+	}
+	if (command == "color") {
+		if (currentTab->format != eGlyph) {
+			//If more arguments are supplied,
+			float newR, newG, newB;
+			if (input >> newR && input >> newG && input >> newB) {
+				float newA;
+				if (input >> newA) {
+					currentTab->currentShape().color = fgr::fcolor(newR, newG, newB, newA);
+					return uSuccess;
+				}
+				else {
+					currentTab->currentShape().color = fgr::fcolor(newR, newG, newB);
+					return uSuccess;
+				}
+			}
+			//Otherwise, tell them what's what
+			else {
+				send_message("{ " +
+					std::to_string(currentTab->currentShape().color.getLevel('r')) + ", " +
+					std::to_string(currentTab->currentShape().color.getLevel('g')) + ", " +
+					std::to_string(currentTab->currentShape().color.getLevel('b')) +
+					" }", uSuccess);
+				return uSuccess;
+			}
+		}
+		else {
+			send_message("Current art has no member 'color'", uError);
+			return uError;
 		}
 	}
 	//Err - invalid command

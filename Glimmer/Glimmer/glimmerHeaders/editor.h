@@ -188,7 +188,8 @@ public:
 	float rotation;
 	//What tool is currently selected
 	toolNum currentTool;
-
+	//If we're editing a graphic, this points to the shape in it we are currently at.
+	fgr::graphicContainer::iterator subGraphicShape;
 	// Settings as to whether different editor panes are open, and their sizes when open
 	//COMMAND LINE (BOTTOM)
 		bool showCommandLine;
@@ -365,6 +366,8 @@ public:
 	// EDITING FUNCTIONALITIES
 	//Editing to the selected shape/glyph should always be done through this
 	fgr::glyph& currentGlyph() const;
+	//...Except in cases of shape-exclusive properties.
+	fgr::shape& currentShape() const;
 	//This function is applied to transform the matrix to its default zoom, considered 100%
 	void baseTransform() const;
 	//Assuming correct translations/viewport, draw the editor contents.
@@ -419,15 +422,19 @@ public:
 	}
 	//Zoom in
 	void zoomIn() {
-		if (zoom < 240.0f)
-			zoom += 0.1f;
+		if (zoom < 240.0f) {
+			zoom *= 1.05f;
+			pan *= (1.05f * 1.0f);
+		}
 	}
 	//Zoom out
 	void zoomOut() {
-		if (zoom > 0.1f)
-			zoom -= 0.1f;
-		if (zoom < 0.1f)
-			zoom = 0.1f;
+		if (zoom > 0.05f) {
+			zoom /= 1.05f;
+			pan /= (1.05f);
+		}
+		if (zoom < 0.05f)
+			zoom = 0.05f;
 	}
 };
 
@@ -442,7 +449,7 @@ void editor::baseTransform() const {
 void editor::defaultSettings() {
 	//Default editor pane settings
 	pan = fgr::point();
-	zoom = 1.0f;
+	zoom = 0.1f;
 	rotation = 0;
 	//Default booleans
 	showFileTree =				true;
@@ -490,6 +497,7 @@ void editor::newFile(editortype filetype) {
 	default:
 	case eGraphic:
 		graphicArt = new fgr::graphic;
+		subGraphicShape = graphicArt->end();
 		break;
 	case eShape:
 		shapeArt = new fgr::shape;
@@ -504,7 +512,6 @@ void editor::newFile(editortype filetype) {
  * Be sure to update the 'blankFile' flag to false if something is changed!
  * As well as the 'unsavedChanges' flag!!!! */
 fgr::glyph& editor::currentGlyph() const {
-	return *glyphArt;
 	switch (format) {
 	case eSpritesheet:
 		//NOT YET SUPPORTED
@@ -513,7 +520,7 @@ fgr::glyph& editor::currentGlyph() const {
 		//NOT YET SUPPORTED
 		break;
 	case eGraphic:
-		//NOT YET SUPPORTED
+		return *subGraphicShape;
 		break;
 	case eShape:
 		return *shapeArt;
@@ -523,6 +530,26 @@ fgr::glyph& editor::currentGlyph() const {
 	//Exception
 	assert(0 && "Bad logic in editor::currentGlyph");
 	return *glyphArt;
+}
+
+//Access the current shape! Good for colors, etc.
+fgr::shape& editor::currentShape() const {
+	switch (format) {
+	case eSpritesheet:
+		//NOT YET SUPPORTED
+		break;
+	case eAnimation:
+		//NOT YET SUPPORTED
+		break;
+	case eGraphic:
+		return *subGraphicShape;
+		break;
+	case eShape:
+		return *shapeArt;
+	}
+	//Exception
+	assert(0 && "Bad logic in editor::currentShape");
+	return *shapeArt;
 }
 
 //Correctly format the editor layout to a particular editor type as is neccessary
@@ -755,12 +782,31 @@ void setViewport(const viewport& rectangle, bool fillscreen = true) {
 //This function assumes correct translation/viewport has been set, and prepares to
 //draw the contents of the editor window
 void editor::renderArt() const {
+	float LBound = (pan.x() - 0.5f) / zoom;
+	float RBound = (pan.x() + 0.5f) / zoom;
+	float BBound = (pan.y() - aspectRatio() / 2) / zoom;
+	float TBound = (pan.y() + aspectRatio() / 2) / zoom;
+	glColor3f(0.5f, 0.5f, 0.5f);
+	glLineStipple(1, 0xF0F0);
+	glEnable(GL_LINE_STIPPLE);
+	//A few other axes
+	glBegin(GL_LINES);
+		float i;
+		for (i = fminf(floorf(LBound), ceilf(LBound)); i <= RBound; ++i) {
+			glVertex2f(i, BBound); glVertex2f(i, TBound);
+		}
+		for (i = fminf(floorf(BBound), ceilf(BBound)); i <= TBound; ++i) {
+			glVertex2f(LBound, i); glVertex2f(RBound, i);
+		}
+	glEnd();
+	glDisable(GL_LINE_STIPPLE);
+	//Draw central axes
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glBegin(GL_LINES);
-		glVertex2f((pan.x() - 1) / zoom, 0);
-		glVertex2f((pan.x() + 1) / zoom, 0);
-		glVertex2f(0, (pan.y() - 1) / zoom);
-		glVertex2f(0, (pan.y() + 1) / zoom);
+		glVertex2f(LBound, 0);
+		glVertex2f(RBound, 0);
+		glVertex2f(0, BBound);
+		glVertex2f(0, TBound);
 	glEnd();
 	switch (format)
 	{
@@ -844,10 +890,7 @@ void drawEditor(const editor& workbench) {
 		fgr::setcolor(workbench.glyphGLModeColor);
 		setViewport(workbench.glyphGLModePane());
 		std::string modeword;
-		if (workbench.glyphArt)
-			modeword = workbench.glyphArt->glModeString();
-		else
-			modeword = "No glyph loaded";
+		modeword = workbench.currentGlyph().glModeString();
 		for (char c : modeword)
 			glutBitmapCharacter(fontNum, c);
 	}
@@ -872,7 +915,8 @@ void drawEditor(const editor& workbench) {
 			workbench.baseTransform();
 			glTranslatef(-workbench.pan.x(), -workbench.pan.y(), 0.0f);
 			glScalef(workbench.zoom, workbench.zoom, 1.0f);
-			glRotatef(workbench.rotation /fgr::PI * 180.0f, 0.0f, 0.0f, 1.0f);
+			if (workbench.rotation)
+				glRotatef(workbench.rotation /fgr::PI * 180.0f, 0.0f, 0.0f, 1.0f);
 			workbench.renderArt();
 		glPopMatrix();
 	}

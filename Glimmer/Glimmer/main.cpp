@@ -91,7 +91,12 @@ void initTabs(int argc, char** argv) {
 		tabs.push_back(editor(eGlyph));
 		currentTab = tabs.begin();
 		tabs.back().blankFile = true;
+		cli::send_message("Started session without arguments.");
+		return;
 	}
+	//Otherwise, its reasonable to assume there's another argument
+	tabs.push_back(editor(std::string(argv[1])));
+	currentTab = tabs.begin();
 }
 
 //main function; exists to set up a few things and then enter the glut-main-loop
@@ -115,11 +120,6 @@ int main(int argc, char** argv) {
 	glut32::setWindowIcon("GlimmerTitle", argv[0], IDI_ICON1);
 	//Change the window name to something better
 	currentTab->updateWindowName();
-	
-	//Temporary debugging-esque stuff
-	currentTab->glyphArt->mode = fgr::glLineStrip;
-
-	std::vector<fgr::point> testVec;
 
 	////Some settings
 	//glutIgnoreKeyRepeat(1);
