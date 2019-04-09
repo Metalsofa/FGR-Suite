@@ -11,8 +11,12 @@
 //Where the mouse was when we last checked, in the order x, y
 int mouseMemory [2];
 
-//GLUT event handler for regular key-presses
-void processNormalKeys(unsigned char key, int x, int y) {
+//The history of keypresses for the user
+std::string chordMemory;
+
+
+//Non-mapping-based key functionalities
+void keyProcessNoMap(unsigned char key, int x, int y) {
 	if (cli::listening) {
 		// <CR>
 		if (key == 13) {
@@ -46,6 +50,54 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	if (key == '0')
 		cli::digest("fit");
 	renderScene();
+	return;
+
+}
+
+//Get the key index associated with a particular <nickname>
+char getSpecialKey(const std::string& nickname) {
+	if (nickname == "cr" || nickname == "enter" || nickname == "return")
+		return 13;
+	if (nickname == "backspace")
+		return 8;
+	if (nickname == "esc")
+		return 27;
+	return 0;
+}
+
+//GLUT event handler for regular key-presses
+void processNormalKeys(unsigned char key, int x, int y) {
+	if (cli::listening) {
+		keyProcessNoMap(key, x, y);
+		return;
+	}
+	chordMemory.push_back(key);
+	//If it's been long enough, swallow the chord
+	if ("it's been long enough") {
+		//Execute the binding, if it exists
+		if (bindings.count(chordMemory)) {
+			std::string imperative = bindings[chordMemory];
+			for (unsigned int i = 0; i < imperative.size(); ++i) {
+				//Check for special characters in angle brackets
+				if (imperative[i] == '<') {
+					std::string special;
+					while (imperative[++i] != '>' && i < imperative.size()) {
+						special.push_back(imperative[i]);
+					}
+					keyProcessNoMap(getSpecialKey(special), x, y);
+					continue;
+				}
+				keyProcessNoMap(imperative[i], x, y);
+			}
+			chordMemory.clear();
+			return;
+		}
+		for (unsigned int i = 0; i < chordMemory.size(); ++i) {
+			keyProcessNoMap(chordMemory[i], x, y);
+		}
+		//Clear the chord memory
+		chordMemory.clear();
+	}
 	return;
 }
 
@@ -214,6 +266,8 @@ void rightClick(int x, int y) {
 
 //GLUT event handler for a mouse click
 void MouseClick(int button, int state, int x, int y) {
+	int mod = glutGetModifiers();
+	float scrollspeed = 0.05f;
 	//Toggling - this always happens
 	if (button < 3)
 		mouseStates[button] = state;
@@ -232,7 +286,12 @@ void MouseClick(int button, int state, int x, int y) {
 		if (state == GLUT_DOWN) {
 			switch (currentTab->reigonID(x, y)) {
 			case rCentral:
-				currentTab->zoomIn();
+				if (mod == GLUT_ACTIVE_CTRL)
+					currentTab->zoomIn();
+				else if (mod == GLUT_ACTIVE_SHIFT)
+					currentTab->pan.xinc(scrollspeed);
+				else
+					currentTab->pan.yinc(scrollspeed);
 				renderScene();
 				break;
 			}
@@ -242,7 +301,12 @@ void MouseClick(int button, int state, int x, int y) {
 		if (state == GLUT_DOWN) {
 			switch (currentTab->reigonID(x, y)) {
 			case rCentral:
-				currentTab->zoomOut();
+				if (mod == GLUT_ACTIVE_CTRL)
+					currentTab->zoomOut();
+				else if (mod == GLUT_ACTIVE_SHIFT)
+					currentTab->pan.xdec(scrollspeed);
+				else
+					currentTab->pan.ydec(scrollspeed);
 				renderScene();
 				break;
 			}

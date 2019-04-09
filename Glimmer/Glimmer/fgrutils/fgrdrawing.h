@@ -220,7 +220,7 @@ namespace  fgr {
 		glLineWidth(obj.lineThickness);
 		glPointSize(obj.pointSize);
 		glBegin(obj.mode);
-		obj.applyToAll(glVertexPoint);
+			obj.applyToAll(glVertexPoint);
 		glEnd();
 	}
 
@@ -228,7 +228,6 @@ namespace  fgr {
 	void draw(const fgr::graphic& obj) {
 		obj.applyToAll(draw);
 	}
-
 
 	//Use openGL to render an animation at the correct frame
 	void draw(const fgr::animation& obj) {
@@ -240,6 +239,34 @@ namespace  fgr {
 		draw(obj.feed());
 	}
 
+	//Use openGL to render the current form of a spritesheet
+	void draw(const fgr::spritesheet& obj) {
+
+	}
+
+	//Transform according to a fractal's instructions
+	void fractalTransform(const fgr::fractal_mantle& instructions) {
+		glTranslatef(instructions.location.x(), instructions.location.y(), 0.0f);
+		glScalef(instructions.scale, instructions.scale, instructions.scale);
+		glRotatef(instructions.rotation / PI * 180, 0.0f, 0.0f, 1.0f);
+	}
+	
+	//Use openGL to render a fractal
+	void draw(const fgr::fractal& pattern, int depth) {
+		glMatrixMode(GL_MODELVIEW);
+		if (depth == 0)
+			return;
+		//Draw the current level
+		draw(pattern);
+		//Draw every other level
+		for (std::size_t i = 0; i < pattern.branchPoints.size(); ++i) {
+			glPushMatrix();
+				fractalTransform(pattern.branchPoints[i]);
+				draw(pattern, depth - 1);
+			glPopMatrix();
+		}
+		return;
+	}
 }
 
 

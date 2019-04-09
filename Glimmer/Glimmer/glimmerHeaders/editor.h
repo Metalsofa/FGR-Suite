@@ -262,6 +262,9 @@ public:
 	int margin = 5;
 	int spacing = 8;
 	float brushTolerance = 0.0f;
+	//Experimental
+	bool experimentalFractalMode = true;
+	int experimentalFractalIterations = 10;
 
 	// CONSTRUCTORS
 	//Default constructor
@@ -354,35 +357,35 @@ public:
 	}
 	//Right-hand side file-tree display
 	viewport fileTreePane() const {
-		return viewport(superWindowPane().right() - fileTreeWidth, commandLinePane().top(), fileTreeWidth, superWindowPane().top() - commandLinePane().top(), showFileTree, true);
+		return viewport(superWindowPane().right() - fileTreeWidth * (!!showFileTree && !zen), commandLinePane().top(), fileTreeWidth, superWindowPane().top() - commandLinePane().top(), showFileTree && !zen, true);
 	}
 	//Top-side editor open tabs display
 	viewport tabHeaderPane() const {
-		return viewport(superWindowPane().left(), superWindowPane().top() - tabHeaderHeight, fileTreePane().left(), tabHeaderHeight, showTabHeader, false);
+		return viewport(superWindowPane().left(), superWindowPane().top() - tabHeaderHeight * !!(showTabHeader && !zen), fileTreePane().left(), tabHeaderHeight, showTabHeader && !zen, false);
 	}
 	//Left-hand side animation frames display
 	viewport animationFramesPane() const {
-		return viewport(superWindowPane().left(), commandLinePane().top(), animationFramesWidth, tabHeaderPane().bottom() - commandLinePane().top(), showAnimationFrames, true);
+		return viewport(superWindowPane().left(), commandLinePane().top(), animationFramesWidth * !!(showAnimationFrames && !zen), tabHeaderPane().bottom() - commandLinePane().top(), showAnimationFrames && !zen, true);
 	}
 	//Left-hand side layers display
 	viewport layersPane() const {
-		return viewport(animationFramesPane().right(), commandLinePane().top(), layersWidth, animationFramesPane().top() - commandLinePane().top(), showLayers, true);
+		return viewport(animationFramesPane().right(), commandLinePane().top(), layersWidth * !!(showLayers && !zen), animationFramesPane().top() - commandLinePane().top(), showLayers && !zen, true);
 	}
 	//Left-hand side shapes display
 	viewport shapesPane() const {
-		return viewport(layersPane().right(), commandLinePane().top(), shapesWidth, animationFramesPane().top() - commandLinePane().top(), showShapes, true);
+		return viewport(layersPane().right(), commandLinePane().top(), shapesWidth * !!(showShapes && !zen), animationFramesPane().top() - commandLinePane().top(), showShapes && !zen, true);
 	}
 	//Bottom-side shape-properties display; contains two other panes
 	viewport shapePropertiesPane() const {
-		return viewport(shapesPane().right(), commandLinePane().top(), fileTreePane().left() - shapesPane().right(), shapePropertiesHeight, showShapeProperties, false);
+		return viewport(shapesPane().right(), commandLinePane().top(), fileTreePane().left() - shapesPane().right(), shapePropertiesHeight * !!( showShapeProperties && !zen), showShapeProperties && !zen, false);
 	}
 	//Part of the shape-properties display: line thickness and point size
 	viewport shapeSpecificationsPane() const {
-		return viewport(shapeColorPane().right(), commandLinePane().top(), shapePropertiesPane().width - shapeColorPane().width, shapePropertiesPane().height, showShapeProperties, false);
+		return viewport(shapeColorPane().right(), commandLinePane().top(), shapePropertiesPane().width - shapeColorPane().width, shapePropertiesPane().height, shapePropertiesPane().show, false);
 	}
 	//Part of the shape-properties display: color of the current shape
 	viewport shapeColorPane() const {
-		return viewport(shapePropertiesPane().left(), commandLinePane().top(), shapePropertiesPane().width / 2, shapePropertiesPane().height, showShapeProperties, false);
+		return viewport(shapePropertiesPane().left(), commandLinePane().top(), shapePropertiesPane().width / 2, shapePropertiesPane().height, shapePropertiesPane().show, false);
 	}
 	//Bottom-side glyph GLmode display
 	viewport glyphGLModePane() const {
@@ -390,7 +393,7 @@ public:
 	}
 	//Right-hand side editor tools display
 	viewport toolsPane() const {
-		return viewport(fileTreePane().left() - toolsWidth, glyphGLModePane().top(), toolsWidth, tabHeaderPane().bottom() - glyphGLModePane().top(), showTools, true);
+		return viewport(fileTreePane().left() - toolsWidth * !!( showTools && !zen), glyphGLModePane().top(), toolsWidth, tabHeaderPane().bottom() - glyphGLModePane().top(), showTools, true);
 	}
 	//Central editor display
 	viewport centralPane() const {
@@ -1007,7 +1010,12 @@ void editor::renderArt() const {
 			fgr::draw(*animArt);
 			break;
 		case eGraphic:
-			fgr::draw(*graphicArt);
+			if (experimentalFractalMode && currentGraphic().size() >= 2) {
+				fgr::draw(fgr::fractal(currentGraphic().front(), currentGraphic().back()), experimentalFractalIterations);
+			}
+			else {
+				fgr::draw(*graphicArt);
+			}
 			break;
 		case eShape:
 			fgr::draw(*shapeArt);

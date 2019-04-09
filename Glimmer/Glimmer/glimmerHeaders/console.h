@@ -6,6 +6,14 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <map>
+#include <unordered_map>
+
+//All keymappings
+std::map<std::string, std::string> bindings;
+//User variables (bash-stype; they only hold text)
+std::unordered_map<std::string, std::string> user_variables;
+
 
 //Urgency codes for system messages
 enum uCode { uSuccess, uInvalid, uIncorrectUsage, uWarning, uError };
@@ -46,6 +54,14 @@ namespace cli {
 		input.erase(input.begin());
 		digest(input);
 		input.clear();
+	}
+	//Interpret some input stream as console input
+	void gulp(std::istream& inp) {
+		std::string line;
+		while (std::getline(inp, line)) {
+			if (line.front() == ':')
+				digest(line);
+		}
 	}
 	//Send a message to the console
 	void send_message(const std::string& mess, uCode urgency = uSuccess) {
@@ -92,6 +108,18 @@ uCode cli::digest(const std::string& token) {
 	std::stringstream input(token);
 	std::string command;
 	input >> command;
+	//Create a new binding
+	if (command == "map") {
+		std::string whomst;
+		input >> whomst;
+		if (getline(input, command)) {
+			bindings[whomst] = command;
+			send_message("Key combination " + whomst + " mapped to " + command, uSuccess);
+			return uSuccess;
+		}
+		send_message("Usage is :map <keys> <simulated keystrokes>", uIncorrectUsage);
+		return uIncorrectUsage;
+	}
 	//Force quit
 	if (command == "q!") {
 		std::string filename(splitPath(currentTab->filepath).second);
@@ -216,6 +244,62 @@ uCode cli::digest(const std::string& token) {
 			send_message("Usage is :mode <GLModename/GLModeNum>", uIncorrectUsage);
 			return uIncorrectUsage;
 		}
+	}
+	//Clear the canvas on the current layer
+	if (command == "clear") {
+		currentTab->currentGlyph().clear();
+		return uSuccess;
+	}
+	//Set the experimental fractal mode depth level
+	if (command == "iterations") {
+		int newCount;
+		if (input >> newCount) {
+			currentTab->experimentalFractalIterations = newCount;
+			send_message("Set fractal recursion depth to " + std::to_string(newCount));
+			return uSuccess;
+		}
+		else {
+			send_message("Usage is :iterations <int recursion-depth>", uIncorrectUsage);
+			return uIncorrectUsage;
+		}
+	}
+	if (command == "shapen") {
+		++currentTab->subGraphicShape;
+		if (currentTab->subGraphicShape == currentTab->currentGraphic().end()) {
+			currentTab->subGraphicShape = currentTab->currentGraphic().begin();
+			return uSuccess;
+		}
+	}
+	if (command == "nshapen" || command == "nshape") {
+		currentTab->subGraphicShape = currentTab->currentGraphic().insert(++currentTab->subGraphicShape, fgr::shape());
+		return uSuccess;
+	}
+	if (command == "shapep") {
+		if (currentTab->subGraphicShape != currentTab->currentGraphic().begin())
+			--currentTab->subGraphicShape;
+		return uSuccess;
+	}
+	if (command == "nshapep") {
+		currentTab->subGraphicShape = currentTab->currentGraphic().insert(currentTab->subGraphicShape, fgr::shape());
+		return uSuccess;
+	}
+	//Toggle distraction-free mode
+	if (command == "zen") {
+		//If already in zen mode, exit
+		if (zen) {
+			glutSetWindowTitle("EXITING ZEN");
+			glutPositionWindow(0, 0);
+			glutReshapeWindow(900, 900);
+			glut32::maximizeWindow("EXITING ZEN");
+			currentTab->updateWindowName();
+			zen = false;
+		}
+		//Otherwise, enter zen mode
+		else {
+			glutFullScreen();
+			zen = true;
+		}
+		return uSuccess;
 	}
 	//Change current shape color
 	if (command == "c" || command == "color") {

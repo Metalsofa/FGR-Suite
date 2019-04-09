@@ -463,16 +463,19 @@ namespace fgr {
 		animation(const frame& other) : animationContainer() {
 			push_back(other);
 			currentframe = begin();
+			cycle = true;
 		}
 		//Construct from a graphic
 		animation(const graphic& other) : animationContainer() {
 			push_back(frame(other));
 			currentframe = begin();
+			cycle = true;
 		}
 		//Construct from a shape
 		animation(const shape& other) : animationContainer() {
 			push_back(frame(graphic(other)));
 			currentframe = begin();
+			cycle = true;
 		}
 		// Return the graphic at the current frame, and advance the cloc
 		const graphic& feed() {
@@ -532,17 +535,93 @@ namespace fgr {
 		}
 	};
 
-
-	//To be included as a member in animated objects
+	typedef std::string spriteIndex;
+	typedef std::map<spriteIndex, std::string> spritePathLibrary;
+	typedef std::map<spriteIndex, animation> spriteLibrary;
+	//To be included as a member in animated objects, this class stores loaded sprite data and
+	//takes on the form of just one member when drawn.
 	class spritesheet {
-	public:
+	private:
 		//Internal representation
-		std::map<std::string, animation> animations;
-		std::map<std::string, graphic> graphics;
+		//Hard-drive storage of the objects
+		spritePathLibrary library;
+		//Once loaded, we structure the sprites in this map
+		spriteLibrary contents;
+		//The sprite currently being 'worn' by this spritesheet
+		spriteLibrary::const_iterator costume;
+	public:
+		//Default constructor
+		spritesheet() {
+			costume = contents.begin();
+		}
+		//Load in a sprite from the library, returns true only if it loads it in
+		bool load(const spriteIndex& sprite_ID) {
+			//Returns false if this sprite has already been loaded
+			spriteLibrary::iterator content_lookup = contents.find(sprite_ID);
+			if (content_lookup._Ptr)
+				return false;
+			spritePathLibrary::iterator library_lookup = library.find(sprite_ID);
+			//If we found a sprite with the desired name,
+			if (library_lookup._Ptr) {
+				//animationFromFile(contents[sprite_ID], library_lookup->second);
+				return true;
+			}
+			//Otherwise, the search failed
+			return false;
+		}
+		//Add an existing file to the library
+		bool add_sprite(const spriteIndex& sprite_ID, const std::string& path) {
+			spritePathLibrary::iterator lookup = library.find(sprite_ID);
+			library[sprite_ID] = path;
+		}
+		//Add a sprite object to the library by first writing it to a file
+		bool add_new_sprite(const animation& obj, const spriteIndex& sprite_ID, const std::string& path) {
 
+		}
 	};
 
 }
+
+// OTHER CLASSES
+
+namespace fgr {
+	//Structures information about a given fractal recall
+	class fractal_mantle {
+	public:
+		float rotation;
+		point location;
+		float scale;
+		fractal_mantle() {
+			rotation = 0;
+			location = point();
+			scale = 1;
+		}
+		fractal_mantle(const point& loc_, float rot_, float scl_) {
+			rotation = rot_;
+			location = loc_;
+			scale = scl_;
+		}
+	};
+	//Structures information needed to draw a simple fractal
+	typedef shape fractalArt;
+	typedef std::vector<fractal_mantle> branchContainer;
+	class fractal : public fractalArt {
+	public:
+		branchContainer branchPoints;
+		//Default constructor
+		fractal() : fractalArt() { }
+		//Construct from art
+		fractal(const fractalArt& image) : fractalArt(image) { }
+		//Construct from a glyph, and an art
+		fractal(const fractalArt& image, const glyphContainer& branches) : fractalArt(image) {
+			for (glyphContainer::const_iterator itr = branches.begin(); itr != branches.end(); ++itr) {
+				branchPoints.push_back(fractal_mantle(*itr, itr->angle(), 0.5f));
+			}
+		}
+	};
+}
+
+
 
 #include "fgrfileops.h"
 

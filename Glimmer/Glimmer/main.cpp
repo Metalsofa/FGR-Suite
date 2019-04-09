@@ -4,6 +4,10 @@
 #include "resource.h"
 //The location on the computer where this session takes place (is a folder, not a file)
 #include <string>
+#include <fstream>
+
+bool zen = false;
+
 std::string sessionFilePath;
 
 //Custom header includes
@@ -139,16 +143,13 @@ int main(int argc, char** argv) {
 	glutMotionFunc(ActiveMouseMove); //Callback for mouse movement with button down
 	glutPassiveMotionFunc(PassiveMouseMove); //Callback for mouse movement with no button down
 
-	//initGL();
-	//
-	////enter GLUT event processing cycle
-	//glutMainLoop();
-	
-	//glutInit(&argc, argv);          // Initialize GLUT
-	//glutCreateWindow("Vertex, Primitive & Color");  // Create window with the given title
-	//glutInitWindowSize(320, 320);   // Set the window's initial width & height
-	//glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
-	//glutDisplayFunc(display);       // Register callback handler for window re-paint event
+	//Attempt to load user prefrences
+	std::ifstream prefstream(".glimrc");
+	if (prefstream.is_open()) {
+		cli::gulp(prefstream);
+		prefstream.close();
+	}
+
 	initGL();                       // Our own OpenGL initialization
 	glutMainLoop();                 // Enter the event-processing loop
 
