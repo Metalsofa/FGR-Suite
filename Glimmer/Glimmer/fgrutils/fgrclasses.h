@@ -130,6 +130,9 @@ namespace fgr {
 		}
 		//Returns the diagonally-spanning segment for this shape
 		const segment bounds() const {
+			//Error-check for insufficient points
+			if (size() < 2)
+				return segment();
 			segment rets = segment(front(), *(++begin()));
 			//Iterate through every point and set the bounding segment accordingly
 			for (const_iterator itr = begin(); itr != end(); itr++) {
@@ -375,6 +378,10 @@ namespace fgr {
 		graphic(const graphic& other) : graphicContainer(other) {
 
 		}
+		//Construct from a single shape
+		graphic(const shape& other) : graphicContainer() {
+			push_back(other);
+		}
 	};
 
 	// Like a graphic, but meant to be used in animations
@@ -394,8 +401,12 @@ namespace fgr {
 			delay = 0;
 		}
 		//Construct from delay and graphic
-		frame(int del, graphic body) : graphic(body) {
+		frame(int del, const graphic& body) : graphic(body) {
 			delay = del;
+		}
+		//Construct just from a graphic
+		frame(const graphic& body) : graphic(body) {
+			delay = 0;
 		}
 	};
 
@@ -404,6 +415,8 @@ namespace fgr {
 	public:
 		using animationContainer::iterator;
 		using animationContainer::const_iterator;
+		using animationContainer::front;
+		using animationContainer::back;
 		using animationContainer::push_back;
 		using animationContainer::erase;
 		using animationContainer::insert;
@@ -445,6 +458,21 @@ namespace fgr {
 			currentframe = begin();
 			frameclock = 0;
 			cycle = cycle_;
+		}
+		//Construct from a frame
+		animation(const frame& other) : animationContainer() {
+			push_back(other);
+			currentframe = begin();
+		}
+		//Construct from a graphic
+		animation(const graphic& other) : animationContainer() {
+			push_back(frame(other));
+			currentframe = begin();
+		}
+		//Construct from a shape
+		animation(const shape& other) : animationContainer() {
+			push_back(frame(graphic(other)));
+			currentframe = begin();
 		}
 		// Return the graphic at the current frame, and advance the cloc
 		const graphic& feed() {

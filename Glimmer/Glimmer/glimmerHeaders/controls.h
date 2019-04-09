@@ -27,9 +27,15 @@ void processNormalKeys(unsigned char key, int x, int y) {
 					cli::listening = false;
 			}
 		}
+		//<esc>
+		else if (key == 27) {
+			cli::input.clear();
+			cli::listening = false;
+		}
 		else {
 			cli::input.push_back(key);
 		}
+		renderScene();
 		return;
 	}
 	if (key == ':') {
@@ -46,6 +52,32 @@ void processNormalKeys(unsigned char key, int x, int y) {
 //GLUT event handler for regular key-releases
 void releaseNormalKeys(unsigned char key, int x, int y) {
 
+	return;
+}
+
+//GLUT event handler for special key-presses
+void ProcessSpecialKeys(int key, int x, int y) {
+	if (key == GLUT_KEY_UP) {
+		if (cli::listening && cli::history.size()) {
+			cli::input = cli::history.back();
+			renderScene();
+			return;
+		}
+	}
+	if (key == GLUT_KEY_DOWN) {
+		if (cli::listening && cli::history.size() && cli::input == cli::history.back()) {
+			cli::input = ":";
+			renderScene();
+			return;
+		}
+	}
+	return;
+}
+
+//GLUT event handler for special key-releases
+void ReleaseSpecialKeys(int key, int x, int y) {
+
+	return;
 }
 
 //This function is called every time a left-click occurs. By this time, the state will be updated.
@@ -82,7 +114,7 @@ void leftClick(int x, int y) {
 			cli::send_message("Shape Properties");
 			return;
 		case rShapes:
-			cli::send_message("Shapes");
+			currentTab->processShapesClick(x, y);
 			return;
 		case rTabHeader:
 			cli::send_message("Tab Header");
@@ -227,19 +259,32 @@ void ActiveMouseMove(int x, int y) {
 	//Behaviour depends on what pane the motion is in
 	switch (currentTab->reigonID(x, y)) {
 	case rCentral:
-		//If both not both mouse buttons are down, move the last point to the mouse
-		if (!(mouseStates[GLUT_RIGHT_BUTTON] && mouseStates[GLUT_LEFT_BUTTON])) {
-			//If there is a point at all,
-			if (currentTab->currentGlyph().size()) {
-				currentTab->currentGlyph().back() = currentTab->mapPixel(x, y);
-				renderScene();
-			}
-		}
 		//If the middle-button is down,
 		if (!mouseStates[GLUT_MIDDLE_BUTTON]) {
 			//Pan an amount equal to the mouse motion
 			currentTab->pan -= (currentTab->mapPixel(x, y) - currentTab->mapPixel(mouseMemory[0], mouseMemory[1])) * currentTab->zoom;
 			renderScene();
+		}
+		//Behavior depends on tool
+		switch (currentTab->currentTool) {
+		case tAppend:
+			//If both not both mouse buttons are down, move the last point to the mouse
+			if (!(mouseStates[GLUT_RIGHT_BUTTON] && mouseStates[GLUT_LEFT_BUTTON])) {
+				//If there is a point at all,
+				if (currentTab->currentGlyph().size()) {
+					currentTab->currentGlyph().back() = currentTab->mapPixel(x, y);
+					renderScene();
+				}
+			}
+			break;
+		case tBrush:
+			//Holding down the left mouse button deposits points
+			if (!mouseStates[GLUT_LEFT_BUTTON] && (fgr::point(x, y) - fgr::point(mouseMemory[0], 
+				mouseMemory[1])).magnitude() > currentTab->brushTolerance) {
+				currentTab->pushBackPoint(x, y);
+				renderScene();
+			}
+			break;
 		}
 		break;
 	case rAnimationFrames:

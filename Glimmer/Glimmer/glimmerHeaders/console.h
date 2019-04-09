@@ -10,6 +10,21 @@
 //Urgency codes for system messages
 enum uCode { uSuccess, uInvalid, uIncorrectUsage, uWarning, uError };
 
+//Convert a string into an editortype
+editortype stringToType(const std::string& text) {
+	if (text == "glyph" || text == "fgl" || text == ".fgl")
+		return eGlyph;
+	if (text == "shape" || text == "fsh" || text == ".fsh")
+		return eShape;
+	if (text == "graphic" || text == "fgr" || text == ".fgr")
+		return eGraphic;
+	if (text == "animation" || text == "fan" || text == ".fan")
+		return eAnimation;
+	if (text == "spritesheet" || text == "fss" || text == ".fss")
+		return eSpritesheet;
+	return eNULL;
+}
+
 // Command-line interface namespace - session variables, not tab variables
 namespace cli {
 	//The console is not tab-specific, but session-specific.
@@ -202,7 +217,8 @@ uCode cli::digest(const std::string& token) {
 			return uIncorrectUsage;
 		}
 	}
-	if (command == "color") {
+	//Change current shape color
+	if (command == "c" || command == "color") {
 		if (currentTab->format != eGlyph) {
 			//If more arguments are supplied,
 			float newR, newG, newB;
@@ -230,6 +246,97 @@ uCode cli::digest(const std::string& token) {
 		else {
 			send_message("Current art has no member 'color'", uError);
 			return uError;
+		}
+	}
+	//Change current shape line thickness
+	if ( command == "lw" || command == "linewidth" || command == "thickness") {
+		if (currentTab->format != eGlyph) {
+			//If more arguments are supplied,
+			float newW;
+			if (input >> newW) {
+				currentTab->currentShape().lineThickness = newW;
+				return uSuccess;
+			}
+			//Otherwise, tell them what's what
+			else {
+				send_message( "Like width - " +
+					std::to_string(currentTab->currentShape().lineThickness) + 
+					" pixels", uSuccess);
+				return uSuccess;
+			}
+		}
+		else {
+			send_message("Current art has no member 'line width'", uError);
+			return uError;
+		}
+	}
+	//Allow the user to add a vertex using the CLI
+	if (command == "v" || command == "vertex") {
+		float vX, vY;
+		if (input >> vX && input >> vY) {
+			currentTab->currentGlyph().push_back(fgr::point(vX, vY));
+			send_message("Vertex added at " + currentTab->currentGlyph().back().label(), uSuccess);
+			return uSuccess;
+		}
+		else {
+			send_message("Usage is :vertex <x-pos> <y-pos>", uIncorrectUsage);
+			return uIncorrectUsage;
+		}
+	}
+	//Change current shape point size
+	if ( command == "ps" || command == "pointsize") {
+		if (currentTab->format != eGlyph) {
+			//If more arguments are supplied,
+			float newP;
+			if (input >> newP) {
+				currentTab->currentShape().pointSize = newP;
+				return uSuccess;
+			}
+			//Otherwise, tell them what's what
+			else {
+				send_message( "Point size - " + 
+					std::to_string(currentTab->currentShape().pointSize) + 
+					" pixels", uSuccess);
+				return uSuccess;
+			}
+		}
+		else {
+			send_message("Current art has no member 'point size'", uError);
+			return uError;
+		}
+	}
+	//Change the current tool
+	if (command == "t" || command == "tool") {
+		short newTool;
+		if (input >> newTool) {
+			newTool %= tToolCount;
+			currentTab->currentTool = (toolNum)newTool;
+			send_message("Set tool to " + toolName(currentTab->currentTool), uSuccess);
+			return uSuccess;
+		}
+		else {
+			send_message("Currently using tool " + toolName(currentTab->currentTool), uSuccess);
+			return uSuccess;
+		}
+	}
+	//Convert the art into another type
+	if (command == "convert") {
+		//Read in what they would have us convert to
+		if (input >> command) {
+			editortype target = stringToType(command);
+			if (target) {
+				currentTab->convertFile(stringToType(command));
+				send_message("Converted to file " + currentTab->filepath, uSuccess);
+				return uSuccess;
+			}
+			else {
+				send_message("Invalid file type - " + command, uError);
+				return uError;
+			}
+		}
+		else {
+			send_message("Usage is :convert <target file type>", uIncorrectUsage);
+			return uIncorrectUsage;
 		}
 	}
 	//Err - invalid command

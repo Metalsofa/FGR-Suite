@@ -73,6 +73,7 @@ void renderScene(void) {
 	//Draw the current editor
 	drawEditor(*currentTab);
 	//Draw the little console window
+	glLineWidth(1.0f);
 	cli::draw();
 
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -88,7 +89,7 @@ void initTabs(int argc, char** argv) {
 	//If this program was opened without a target file,
 	if (argc == 1) {
 		//Tabular setup
-		tabs.push_back(editor(eGlyph));
+		tabs.push_back(editor(eGraphic));
 		currentTab = tabs.begin();
 		tabs.back().blankFile = true;
 		cli::send_message("Started session without arguments.");
@@ -97,13 +98,11 @@ void initTabs(int argc, char** argv) {
 	//Otherwise, its reasonable to assume there's another argument
 	tabs.push_back(editor(std::string(argv[1])));
 	currentTab = tabs.begin();
+	return;
 }
 
 //main function; exists to set up a few things and then enter the glut-main-loop
 int main(int argc, char** argv) {
-	//Command line args:
-	initTabs(argc, argv);
-
 	//Initialize GLUT
 	glutInit(&argc, argv);
 
@@ -118,8 +117,9 @@ int main(int argc, char** argv) {
 	glut32::maximizeWindow("GlimmerTitle");
 	//Set the window icon (windows only)
 	glut32::setWindowIcon("GlimmerTitle", argv[0], IDI_ICON1);
-	//Change the window name to something better
-	currentTab->updateWindowName();
+
+	//Command line args:
+	initTabs(argc, argv);
 
 	////Some settings
 	//glutIgnoreKeyRepeat(1);
@@ -132,9 +132,9 @@ int main(int argc, char** argv) {
 
 	//// Control callbacks
 	glutKeyboardFunc(processNormalKeys); //Callback pressing a "normal" key
-	////glutSpecialFunc(ProcessSpecialKeys); //Callback for a "special" key
+	glutSpecialFunc(ProcessSpecialKeys); //Callback for a "special" key
+	glutSpecialUpFunc(ReleaseSpecialKeys); //Callback for releasing special keys
 	glutKeyboardUpFunc(releaseNormalKeys); //Callback for releasing "normal" keys
-	////glutSpecialUpFunc(ReleaseSpecialKeys); //Callback for releasing special keys
 	glutMouseFunc(MouseClick); //Callback for mouse clicks
 	glutMotionFunc(ActiveMouseMove); //Callback for mouse movement with button down
 	glutPassiveMotionFunc(PassiveMouseMove); //Callback for mouse movement with no button down

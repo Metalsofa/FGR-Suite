@@ -85,6 +85,8 @@ public:
 	GLsizei height;
 	//Won't always matter; but represents whether it should be shown
 	bool show;
+	//True if it fold horizontally, false if vertically
+	bool foldHorizontal;
 	//Default constructor
 	viewport() {
 		x = 0;
@@ -92,14 +94,16 @@ public:
 		width = 10;
 		height = 10;
 		show = true;
+		foldHorizontal = true;
 	}
 	//Know-it-all constructor
-	viewport(GLint x_, GLint y_, GLsizei width_, GLsizei height_, bool show_) {
+	viewport(GLint x_, GLint y_, GLsizei width_, GLsizei height_, bool show_, bool foldHorizontal_) {
 		x = x_;
 		y = y_;
 		width = width_;
 		height = height_;
 		show = show_;
+		foldHorizontal = foldHorizontal_;
 	}
 	//Know-Most and show-it-all constructor
 	viewport(GLint x_, GLint y_, GLsizei width_, GLsizei height_) {
@@ -108,11 +112,15 @@ public:
 		width = width_;
 		height = height_;
 		show = true;
+		foldHorizontal = true;
 	}
 	// Returns the pixel position of one of the viewport's four boundaries
 	//Returns the pixel position of the right viewport boundary
 	GLint right() const {
-		return x + width * !!show;
+		if (foldHorizontal)
+			return x + width * !!show;
+		else
+			return x + width;
 	}
 	//Returns the pixel position of the left viewport boundary
 	GLint left() const {
@@ -120,7 +128,10 @@ public:
 	}
 	//Returns the pixel position of the top viewport boundary
 	GLint top() const {
-		return y + height * !!show;
+		if (foldHorizontal)
+			return y + height;
+		else
+			return y + height * !!show;
 	}
 	//Returns the pixel position of the bottom viewport boundary
 	GLint bottom() const {
@@ -153,6 +164,7 @@ enum toolNum {
 	tSelectionManip,	//Move, rotate, scale, copy, paste, etc. the selected vertices
 
 	tBrush,				//Place vertices semi-continuously as the mouse moves across the canvas
+	tNormalBrush,		//Places pairs of vertices on opposite sides of the moving mouse, perpindicular to the line of travel
 //Graphic or higher
 	tSever,				//Make an incision on an edge to separate a shape into two shapes
 	tSelectShapes,		//Select vertices one shape at a time
@@ -160,6 +172,23 @@ enum toolNum {
 //The value of this enum tells how many tools there are
 	tToolCount
 };
+
+std::string toolName(toolNum which) {
+	switch (which) {
+	case tNULL:				return "NULL";
+	case tAppend:			return "Append Vertices";
+	case tInsert:			return "Insert Vertices";
+	case tDeletePoint:		return "Delete Vertices";
+	case tMovePoint:		return "Move Vertices";
+	case tSelectPoints:		return "Select Verticies";
+	case tSelectionManip:	return "Manipulate Selection";
+	case tBrush:			return "Vertex Brush";
+	case tSever:			return "Sever Edges";
+	case tSelectShapes:		return "Select Shapes";
+
+	default:				return "ERROR - NOT A VALID TOOL ID";
+	}
+}
 
 //Think of these like tabs
 class editor {
@@ -229,6 +258,10 @@ public:
 		bool showTools;
 		GLint toolsWidth;
 		fgr::fcolor toolsColor;
+	//Some other minor variables
+	int margin = 5;
+	int spacing = 8;
+	float brushTolerance = 0.0f;
 
 	// CONSTRUCTORS
 	//Default constructor
@@ -276,12 +309,17 @@ public:
 			glyphArt = new fgr::glyph(*other.glyphArt);
 		if (other.shapeArt)
 			shapeArt = new fgr::shape(*other.shapeArt);
-		if (other.graphicArt)
+		if (other.graphicArt) {
 			graphicArt = new fgr::graphic(*other.graphicArt);
-		if (other.animArt)
+			subGraphicShape = graphicArt->begin();
+		}
+		if (other.animArt) {
 			animArt = new fgr::animation(*other.animArt);
+			subGraphicShape = animArt->front().begin();
+		}
 		//  LATER THIS HAS TO BE EXPANDED.
 		defaultSettings();
+		configureLayout(format);
 	}
 
 	// FILE/INITIALIZATION METHODS
@@ -306,55 +344,57 @@ public:
 	}
 	//Set settings to their defaults
 	void defaultSettings();
+	//Convert this editor's contents into another format
+	void convertFile(editortype newFormat);
 
 	// LAYOUT INFORMATION ACCESSORS
 	//Bottom-side command line interface
 	viewport commandLinePane() const {
-		return viewport(superWindowPane().left(), superWindowPane().bottom(), superWindowPane().right(), commandLineHeight, showCommandLine);
+		return viewport(superWindowPane().left(), superWindowPane().bottom(), superWindowPane().right(), commandLineHeight, showCommandLine, false);
 	}
 	//Right-hand side file-tree display
 	viewport fileTreePane() const {
-		return viewport(superWindowPane().right() - fileTreeWidth, commandLinePane().top(), fileTreeWidth, superWindowPane().top() - commandLinePane().top(), showFileTree);
+		return viewport(superWindowPane().right() - fileTreeWidth, commandLinePane().top(), fileTreeWidth, superWindowPane().top() - commandLinePane().top(), showFileTree, true);
 	}
 	//Top-side editor open tabs display
 	viewport tabHeaderPane() const {
-		return viewport(superWindowPane().left(), superWindowPane().top() - tabHeaderHeight, fileTreePane().left(), tabHeaderHeight, showTabHeader);
+		return viewport(superWindowPane().left(), superWindowPane().top() - tabHeaderHeight, fileTreePane().left(), tabHeaderHeight, showTabHeader, false);
 	}
 	//Left-hand side animation frames display
 	viewport animationFramesPane() const {
-		return viewport(superWindowPane().left(), commandLinePane().top(), animationFramesWidth, tabHeaderPane().bottom() - commandLinePane().top(), showAnimationFrames);
+		return viewport(superWindowPane().left(), commandLinePane().top(), animationFramesWidth, tabHeaderPane().bottom() - commandLinePane().top(), showAnimationFrames, true);
 	}
 	//Left-hand side layers display
 	viewport layersPane() const {
-		return viewport(animationFramesPane().right(), commandLinePane().top(), layersWidth, animationFramesPane().top() - commandLinePane().top(), showLayers);
+		return viewport(animationFramesPane().right(), commandLinePane().top(), layersWidth, animationFramesPane().top() - commandLinePane().top(), showLayers, true);
 	}
 	//Left-hand side shapes display
 	viewport shapesPane() const {
-		return viewport(layersPane().right(), commandLinePane().top(), shapesWidth, animationFramesPane().top() - commandLinePane().top(), showShapes);
+		return viewport(layersPane().right(), commandLinePane().top(), shapesWidth, animationFramesPane().top() - commandLinePane().top(), showShapes, true);
 	}
 	//Bottom-side shape-properties display; contains two other panes
 	viewport shapePropertiesPane() const {
-		return viewport(shapesPane().right(), commandLinePane().top(), fileTreePane().left() - shapesPane().right(), shapePropertiesHeight, showShapeProperties);
+		return viewport(shapesPane().right(), commandLinePane().top(), fileTreePane().left() - shapesPane().right(), shapePropertiesHeight, showShapeProperties, false);
 	}
 	//Part of the shape-properties display: line thickness and point size
 	viewport shapeSpecificationsPane() const {
-		return viewport(shapeColorPane().right(), commandLinePane().top(), shapePropertiesPane().width - shapeColorPane().width, shapePropertiesPane().height, showShapeProperties);
+		return viewport(shapeColorPane().right(), commandLinePane().top(), shapePropertiesPane().width - shapeColorPane().width, shapePropertiesPane().height, showShapeProperties, false);
 	}
 	//Part of the shape-properties display: color of the current shape
 	viewport shapeColorPane() const {
-		return viewport(shapePropertiesPane().left(), commandLinePane().top(), shapePropertiesPane().width / 2, shapePropertiesPane().height, showShapeProperties);
+		return viewport(shapePropertiesPane().left(), commandLinePane().top(), shapePropertiesPane().width / 2, shapePropertiesPane().height, showShapeProperties, false);
 	}
 	//Bottom-side glyph GLmode display
 	viewport glyphGLModePane() const {
-		return viewport(shapePropertiesPane().left(), shapePropertiesPane().top(), shapePropertiesPane().width, glyphGLModeHeight, showGlyphGLMode);
+		return viewport(shapePropertiesPane().left(), shapePropertiesPane().top(), shapePropertiesPane().width, glyphGLModeHeight, showGlyphGLMode, false);
 	}
 	//Right-hand side editor tools display
 	viewport toolsPane() const {
-		return viewport(fileTreePane().left() - toolsWidth, glyphGLModePane().top(), toolsWidth, tabHeaderPane().bottom() - glyphGLModePane().top(), showTools);
+		return viewport(fileTreePane().left() - toolsWidth, glyphGLModePane().top(), toolsWidth, tabHeaderPane().bottom() - glyphGLModePane().top(), showTools, true);
 	}
 	//Central editor display
 	viewport centralPane() const {
-		return viewport(shapesPane().right(), glyphGLModePane().top(), toolsPane().left() - shapesPane().right(), tabHeaderPane().bottom() - glyphGLModePane().top());
+		return viewport(shapesPane().right(), glyphGLModePane().top(), toolsPane().left() - shapesPane().right(), tabHeaderPane().bottom() - glyphGLModePane().top(), true, false);
 	}
 
 	// DESTRUCTOR
@@ -368,6 +408,8 @@ public:
 	fgr::glyph& currentGlyph() const;
 	//...Except in cases of shape-exclusive properties.
 	fgr::shape& currentShape() const;
+	//The graphic currently being edited
+	fgr::graphic& currentGraphic() const;
 	//This function is applied to transform the matrix to its default zoom, considered 100%
 	void baseTransform() const;
 	//Assuming correct translations/viewport, draw the editor contents.
@@ -419,6 +461,40 @@ public:
 		if (toolsPane().contains(x, y))
 			return rTools;
 		return rInconclusive;
+	}
+	//Deal with a click in the shapes panel
+	void processShapesClick(int x, int y) {
+		if (!showShapes)
+			return;
+		if (reigonID(x, y) != rShapes)
+			return;
+		y = superWindowPane().top() - y;
+		x -= shapesPane().left();
+		x += margin;
+		y -= shapesPane().top() - margin;
+		int paneWidth = shapesPane().width;
+		int step = paneWidth - 2 * margin;
+		int dy = 0;
+		for (fgr::graphic::iterator itr = currentGraphic().begin();
+			itr != currentGraphic().end(); ++itr) {
+			viewport box(0, dy - paneWidth + 2 * margin, 
+				paneWidth - 2 * margin, 
+				paneWidth - 2 * margin);
+			if (box.contains(x, y)) {
+				subGraphicShape = itr;
+				return;
+			}
+			dy -= step + spacing;
+		}
+		viewport box(0, dy - 20, 
+			paneWidth - 2 * margin, 
+			20);
+		if (box.contains(x, y)) {
+			currentGraphic().push_back(fgr::shape());
+			subGraphicShape = --currentGraphic().end();
+			return;
+		}
+		return;
 	}
 	//Zoom in
 	void zoomIn() {
@@ -493,11 +569,12 @@ void editor::newFile(editortype filetype) {
 	switch (filetype) {
 	case eAnimation:
 		animArt = new fgr::animation;
+		subGraphicShape = currentGraphic().begin();
 		break;
 	default:
 	case eGraphic:
 		graphicArt = new fgr::graphic;
-		subGraphicShape = graphicArt->end();
+		subGraphicShape = graphicArt->begin();
 		break;
 	case eShape:
 		shapeArt = new fgr::shape;
@@ -506,6 +583,7 @@ void editor::newFile(editortype filetype) {
 		glyphArt = new fgr::glyph;
 		break;
 	}
+	return;
 }
 
 /* Editing to the selected shape/glyph should always be done through this.
@@ -518,10 +596,9 @@ fgr::glyph& editor::currentGlyph() const {
 		break;
 	case eAnimation:
 		//NOT YET SUPPORTED
-		break;
+		return *subGraphicShape;
 	case eGraphic:
 		return *subGraphicShape;
-		break;
 	case eShape:
 		return *shapeArt;
 	case eGlyph:
@@ -539,7 +616,7 @@ fgr::shape& editor::currentShape() const {
 		//NOT YET SUPPORTED
 		break;
 	case eAnimation:
-		//NOT YET SUPPORTED
+		return *subGraphicShape;
 		break;
 	case eGraphic:
 		return *subGraphicShape;
@@ -552,34 +629,150 @@ fgr::shape& editor::currentShape() const {
 	return *shapeArt;
 }
 
+//Access the current Graphic
+fgr::graphic& editor::currentGraphic() const {
+	switch (format) {
+	case eGraphic:
+		return *graphicArt;
+	case eAnimation:
+		return *(animArt->currentframe);
+	case eSpritesheet:
+		//Not yet supported
+		assert(0 && "Spritesheet editing not yet supported");
+		return *graphicArt;
+	}
+	assert(0);
+}
+
+//Reformat the art to another type
+void editor::convertFile(editortype newformat) {
+	//2x2 switch
+	switch (newformat) {
+	case eGlyph: //Convert to glyph
+		switch (format) {
+		case eShape: //Shape to glyph
+			glyphArt = new fgr::glyph(*shapeArt);
+			delete shapeArt;
+			shapeArt = NULL;
+			break;
+		case eGraphic: //Graphic to glyph
+			glyphArt = new fgr::glyph(currentGlyph());
+			delete graphicArt;
+			graphicArt = NULL;
+			break;
+		case eAnimation: //Animation to glyph
+			glyphArt = new fgr::glyph(currentGlyph());
+			delete animArt;
+			animArt = NULL;
+			break;
+		}
+		break;
+	case eShape: //Convert to shape
+		switch (format) {
+		case eGlyph: //Glyph to shape
+			shapeArt = new fgr::shape(*glyphArt);
+			delete glyphArt;
+			glyphArt = NULL;
+			break;
+		case eGraphic: //Graphic to shape
+			shapeArt = new fgr::shape(currentShape());
+			delete graphicArt;
+			graphicArt = NULL;
+			break;
+		case eAnimation: //Animation to shape
+			shapeArt = new fgr::shape(currentShape());
+			delete animArt;
+			animArt = NULL;
+			break;
+		}
+		break;
+	case eGraphic: //Convert to graphic
+		switch (format) {
+		case eGlyph: //Glyph to Graphic
+			graphicArt = new fgr::graphic(*glyphArt);
+			delete glyphArt;
+			glyphArt = NULL;
+			break;
+		case eShape: //Shape to Graphic
+			graphicArt = new fgr::graphic(*shapeArt);
+			delete shapeArt;
+			shapeArt = NULL;
+			break;
+		case eAnimation: //Animation to Graphic
+			graphicArt = new fgr::graphic(animArt->front());
+			delete animArt;
+			animArt = NULL;
+			break;
+		}
+		subGraphicShape = graphicArt->begin();
+		break;
+	case eAnimation: //Convert to animation
+		switch (format) {
+		case eGlyph: //Glyph to Animation
+			animArt = new fgr::animation(*glyphArt);
+			delete glyphArt;
+			glyphArt = NULL;
+			break;
+		case eShape: //Shape to Animation
+			animArt = new fgr::animation(*shapeArt);
+			delete shapeArt;
+			glyphArt = NULL;
+			break;
+		case eGraphic: //Graphic to Animation
+			animArt = new fgr::animation(*graphicArt);
+			delete graphicArt;
+			graphicArt = NULL;
+			break;
+		}
+		subGraphicShape = animArt->currentframe->begin();
+		break;
+	case eSpritesheet: //Convert to spritesheet
+
+		break;
+	}
+	format = newformat;
+	while (filepath.back() != '.') {
+		filepath.pop_back();
+	}
+	filepath += associatedExtention(format);
+	configureLayout(format);
+	unsavedChanges = true;
+	return;
+}
+
 //Correctly format the editor layout to a particular editor type as is neccessary
 void editor::configureLayout(editortype format_) {
 	//Set the format variable
 	format = format_;
+	showGlyphGLMode = true;
+	showShapeProperties = true;
+	showLayers = true;
+	showShapes = true;
+	showAnimationFrames = true;
 	//Correctly set up the layout based on the format
 	switch (format) {
+		//Format the editor to handle no more than a single glyph
+	case eGlyph:
+		showShapeProperties = false;
+		//Format the editor to handle working on a single shape
+	case eShape:
+		showLayers = false;
+		showShapes = false;
+		//Format the editor for working on a complete graphic
+	case eGraphic:
+		showAnimationFrames = false;
+		//Format the editor for working on a full animation
+	case eAnimation:
+
 		//Format the editor for arranging and editing a spritesheet
 	case eSpritesheet:
 
-		break;
-		//Format the editor for working on a full animation
-	case eAnimation:
-		showAnimationFrames = true;
-		//Format the editor for working on a complete graphic
-	case eGraphic:
-		showLayers = true;
-		showShapes = true;
-		//Format the editor to handle working on a single shape
-	case eShape:
-		showShapeProperties = true;
-		//Format the editor to handle no more than a single glyph
-	case eGlyph:
-		showGlyphGLMode = true;
 		break;
 	case eNULL:
 		//Error handling
 		break;
 	}
+	return;
 }
 
 //Set the text shown on the tab header
@@ -617,6 +810,7 @@ void editor::updateWindowName() const {
 	if (unsavedChanges)
 		title += "[+]";
 	glutSetWindowTitle(title.c_str());
+	return;
 }
 
 //Be very careful - this function does not save any progress first. It's primary purpose
@@ -654,7 +848,6 @@ void editor::deleteAllArt() {
 //Write the current artwork to a particular file path
 bool editor::save(const std::string& path) {
 	editortype targetFiletype = interpretExtention(getExtention(path));
-	filepath = path;
 	//If the target extention is different from the current one,
 	if (format != targetFiletype) {
 		//Fail if the extention is invalid
@@ -666,6 +859,7 @@ bool editor::save(const std::string& path) {
 		 *function to convert the file format.*/
 		return false;
 	}
+	filepath = path;
 	blankFile = false;
 	switch (format) {
 	case eGlyph:
@@ -711,19 +905,25 @@ bool editor::loadFile(const std::string& path) {
 	switch (artform) {
 	case eGlyph:
 		glyphArt = new fgr::glyph;
-		return fgr::glyphFromFile(*glyphArt, path);
+		foundFile = fgr::glyphFromFile(*glyphArt, path);
+		break;
 	case eShape:
 		shapeArt = new fgr::shape;
-		return fgr::shapeFromFile(*shapeArt, path);
+		foundFile = fgr::shapeFromFile(*shapeArt, path);
+		break;
 	case eGraphic:
 		graphicArt = new fgr::graphic;
-		return fgr::graphicFromFile(*graphicArt, path);
+		foundFile = fgr::graphicFromFile(*graphicArt, path);
+		subGraphicShape = currentGraphic().begin();
+		break;
 	case eAnimation:
 		animArt = new fgr::animation;
-		return fgr::animationFromFile(*animArt, path);
+		foundFile = fgr::animationFromFile(*animArt, path);
+		subGraphicShape = currentGraphic().begin();
+		break;
 	case eSpritesheet:
 
-		break;
+		return false;
 	//Otherwise we're dealing with enull
 	default:
 		return false;
@@ -731,23 +931,14 @@ bool editor::loadFile(const std::string& path) {
 	//Set the name of the window appropriately
 	filepath = path;
 	updateWindowName();
-	return true;
+	return foundFile;
 }
 
 //Draw a quadrilateral the size of the screen onto the screen
 void fullScreenQuad() {
-	//GLint viewPortDims[4];
-	//glGetIntegerv(GL_VIEWPORT, viewPortDims);
 	glBegin(GL_QUADS);
-		////Bottom left
-		//glVertex2i(viewPortDims[0], viewPortDims[1]);
-		////Bottom right
-		//glVertex2i(viewPortDims[2], viewPortDims[1]);
-		////Top right
-		//glVertex2i(viewPortDims[2], viewPortDims[3]);
-		////Top left
-		//glVertex2i(viewPortDims[0], viewPortDims[3]);
-		glVertex2i(0, 0); glVertex2i(windowWidth, 0); glVertex2i(windowWidth, windowHeight); glVertex2i(0, windowHeight);
+		glVertex2i(0, 0); glVertex2i(windowWidth, 0); 
+		glVertex2i(windowWidth, windowHeight); glVertex2i(0, windowHeight);
 	glEnd();
 }
 
@@ -786,6 +977,7 @@ void editor::renderArt() const {
 	float RBound = (pan.x() + 0.5f) / zoom;
 	float BBound = (pan.y() - aspectRatio() / 2) / zoom;
 	float TBound = (pan.y() + aspectRatio() / 2) / zoom;
+	glLineWidth(1.0f);
 	glColor3f(0.5f, 0.5f, 0.5f);
 	glLineStipple(1, 0xF0F0);
 	glEnable(GL_LINE_STIPPLE);
@@ -808,27 +1000,30 @@ void editor::renderArt() const {
 		glVertex2f(0, BBound);
 		glVertex2f(0, TBound);
 	glEnd();
-	switch (format)
-	{
-	case eAnimation:
-		fgr::draw(*animArt);
-		break;
-	case eGraphic:
-		fgr::draw(*graphicArt);
-		break;
-	case eShape:
-		fgr::draw(*shapeArt);
-		break;
-	case eGlyph:
-		fgr::draw(*glyphArt);
-		break;
-	default:
-		assert(0 && "INVALID GRAPHIC TYPE");
-	}
+	glPushMatrix();
+		switch (format)
+		{
+		case eAnimation:
+			fgr::draw(*animArt);
+			break;
+		case eGraphic:
+			fgr::draw(*graphicArt);
+			break;
+		case eShape:
+			fgr::draw(*shapeArt);
+			break;
+		case eGlyph:
+			fgr::draw(*glyphArt);
+			break;
+		default:
+			assert(0 && "INVALID GRAPHIC TYPE");
+		}
+	glPopMatrix();
 }
 
 //Draw render an editor using OpenGL instructions
 void drawEditor(const editor& workbench) {
+	glLineWidth(1.0f);
 	void* fontNum = GLUT_BITMAP_HELVETICA_18;
 	//Draw the File Tree
 	if (workbench.showFileTree) {
@@ -869,8 +1064,53 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showShapes) {
 		fgr::setcolor(workbench.shapesColor);
 		setViewport(workbench.shapesPane());
-		for (char c : "<Shapes>")
-			glutBitmapCharacter(fontNum, c);
+		int margin = workbench.margin;
+		int spacing = workbench.spacing;
+		int paneWidth = workbench.shapesPane().width;
+		int step = paneWidth - 2 * margin;
+		float boundscale = fmaxf(workbench.currentGraphic().bounds().width(),
+			workbench.currentGraphic().bounds().height());
+		fgr::point centre = workbench.currentGraphic().bounds().midpoint();
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+			glTranslatef(workbench.shapesPane().left() + margin, 
+				workbench.shapesPane().top() - margin, 0);
+			//Draw every current shape
+			for (fgr::graphicContainer::iterator itr = workbench.currentGraphic().begin();
+				itr != workbench.currentGraphic().end(); ++itr) {
+				//Draw the shape
+				glPushMatrix();
+					glTranslatef(paneWidth / 2 - margin - 1, - step / 2, 0.0f);
+					glScalef((paneWidth - 2 * margin) / boundscale,
+						(paneWidth - 2 * margin) / boundscale, 0);
+					glTranslatef(-centre.x(), -centre.y(), 0.0f);
+					fgr::draw(*itr);
+				glPopMatrix();
+				//Draw the outline
+				glLineWidth(1.0f);
+				glColor3f(0.0f, 0.0f, 0.0f);
+				if (itr == workbench.subGraphicShape) {
+					glColor3f(0.0f, 0.5f, 1.0f);
+					glLineWidth(2.0f);
+				}
+				glBegin(GL_LINE_LOOP);
+					glVertex2i(-1, -1);
+					glVertex2i(paneWidth - 2 * margin, -1);
+					glVertex2i(paneWidth - 2 * margin, -(step) - 1);
+					glVertex2i(-1, -(step) - 1);
+				glEnd();
+				glTranslatef(0.0f, - (step + spacing), 0.0f);
+			}
+			//The 'add shape' button
+			glLineWidth(1.0f);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glBegin(GL_LINE_LOOP);
+				glVertex2i(0, 0);
+				glVertex2i(workbench.shapesPane().width - 2 * margin, 0);
+				glVertex2i(workbench.shapesPane().width - 2 * margin, -(20 + margin));
+				glVertex2i(0, -(20 + margin));
+			glEnd();
+		glPopMatrix();
 	}
 	//Draw the Shape Properties
 	if (workbench.showShapeProperties) {
@@ -905,12 +1145,6 @@ void drawEditor(const editor& workbench) {
 	if (true) {
 		glPushMatrix();
 			setViewport(workbench.centralPane(), false);
-			std::string label("Vertices - " + std::to_string(workbench.currentGlyph().size()) 
-				+ "\nZoom - " + std::to_string(workbench.zoom) 
-				+ "\nPan - " + workbench.pan.label()
-				+ "\nTool - " + std::to_string(workbench.currentTool));
-			for (char c : label)
-				glutBitmapCharacter(fontNum, c);
 			//Apply base transformations
 			workbench.baseTransform();
 			glTranslatef(-workbench.pan.x(), -workbench.pan.y(), 0.0f);
@@ -918,6 +1152,12 @@ void drawEditor(const editor& workbench) {
 			if (workbench.rotation)
 				glRotatef(workbench.rotation /fgr::PI * 180.0f, 0.0f, 0.0f, 1.0f);
 			workbench.renderArt();
+			std::string label("Vertices - " + std::to_string(workbench.currentGlyph().size()) 
+				+ "\nZoom - " + std::to_string(workbench.zoom) 
+				+ "\nPan - " + workbench.pan.label()
+				+ "\nTool - " + std::to_string(workbench.currentTool));
+			for (char c : label)
+				glutBitmapCharacter(fontNum, c);
 		glPopMatrix();
 	}
 }
