@@ -170,6 +170,7 @@
     <ClInclude Include="fgrutils\fgrgeometry.h" />
     <ClInclude Include="fgrutils\fgrclasses.h" />
     <ClInclude Include="fgrutils\fgrutils.h" />
+    <ClInclude Include="fgrutils\fgrmenu.h" />
     <ClInclude Include="fourierHeaders\crypt.h" />
     <ClInclude Include="fourierHeaders\customgl.h" />
     <ClInclude Include="freeglut\include\GL\freeglut.h" />
@@ -191,6 +192,7 @@
     <None Include="untitled.fgl" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="buttonscrap.txt" />
     <Text Include="freeglut\Copying.txt" />
     <Text Include="freeglut\Readme.txt" />
   </ItemGroup>

@@ -4,6 +4,7 @@
 
 #include "gl/glut.h"
 #include "fgrgeometry.h"
+#include "fgrclasses.h"
 
 namespace  fgr {
 
@@ -48,7 +49,12 @@ namespace  fgr {
 	}
 
 	//Like glTranslatef, but it takes a single argument: a point
-	void glTranslatePoint(point& offset) {
+	void glTranslatePoint(const point& offset) {
+		glTranslatef(offset.x(), offset.y(), 0.0f);
+	}
+
+	//Like glScalef, but it takes a single argument: a point
+	void glScalePoint(const point& offset) {
 		glTranslatef(offset.x(), offset.y(), 0.0f);
 	}
 
@@ -246,7 +252,7 @@ namespace  fgr {
 
 	//Transform according to a fractal's instructions
 	void fractalTransform(const fgr::fractal_mantle& instructions) {
-		glTranslatef(instructions.location.x(), instructions.location.y(), 0.0f);
+		glTranslatePoint(instructions.location);
 		glScalef(instructions.scale, instructions.scale, instructions.scale);
 		glRotatef(instructions.rotation / PI * 180, 0.0f, 0.0f, 1.0f);
 	}
