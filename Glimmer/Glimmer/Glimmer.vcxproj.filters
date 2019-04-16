@@ -118,6 +118,12 @@
     <None Include="untitled.fgl">
       <Filter>FGRs</Filter>
     </None>
+    <None Include=".glimrc">
+      <Filter>scrap code</Filter>
+    </None>
+    <None Include="COMMANDS.md">
+      <Filter>Documentation</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="freeglut\Copying.txt">
@@ -126,7 +132,7 @@
     <Text Include="freeglut\Readme.txt">
       <Filter>Documentation\freeglut</Filter>
     </Text>
-    <Text Include="buttonscrap.txt">
+    <Text Include="button_scrap.txt">
       <Filter>scrap code</Filter>
     </Text>
   </ItemGroup>

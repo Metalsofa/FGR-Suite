@@ -58,9 +58,9 @@ void keyProcessNoMap(unsigned char key, int x, int y) {
 char getSpecialKey(const std::string& nickname) {
 	if (nickname == "cr" || nickname == "enter" || nickname == "return")
 		return 13;
-	if (nickname == "backspace")
+	if (nickname == "backspace" || nickname == "bsp")
 		return 8;
-	if (nickname == "esc")
+	if (nickname == "esc" || nickname == "escape")
 		return 27;
 	return 0;
 }

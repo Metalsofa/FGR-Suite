@@ -1,0 +1,13 @@
+:map o :vertex 0.0 0.0 <cr>
+:var red		1 0 0
+:var orange  1 .5 0
+:var yellow	1 1 0
+:var lime .5 1 0
+:var green 0 1 0
+:var teal 0 1 .5
+:var cyan 0 1 1
+:var sky 0 .5 1
+:var blue 0 0 1
+:var purple .5 0 1
+:var magenta 1 0 1
+:var hotpink 1 0 .5

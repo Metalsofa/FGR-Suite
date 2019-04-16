@@ -304,6 +304,10 @@ namespace fgr {
 			p1 = P1;
 			p2 = P2;
 		}
+		//Returns true if the specified point is within the bounds
+		bool contains(const point& spot) const {
+			return between(p1.x(), spot.x(), p2.x()) || between(p1.y(), spot.y(), p2.y());
+		}
 	};
 
 	inline segment rotate90about(int pointID, segment& seg) {

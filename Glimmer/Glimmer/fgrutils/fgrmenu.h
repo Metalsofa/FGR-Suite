@@ -14,7 +14,7 @@ namespace fgr {
 	class menu {
 	public:
 		//This type is used to represent submenu indices
-		typedef unsigned int edex;
+		typedef int edex;
 		//Directions as we know them
 		enum direction { up, down, left, right };
 	private:
@@ -35,8 +35,8 @@ namespace fgr {
 		void (*child_activation_function)(edex);
 		//Whether this is the current menu in focus (one per tree can be like this)
 		bool focused;
-		//Draw this menu, even if it has childeren currently being shown?
-		bool draw_if_unfocused;
+		//Will not show unless this is true
+		bool show_this;
 		//False if this menu is never anything more than a button
 		bool is_menu;
 
@@ -51,8 +51,6 @@ namespace fgr {
 		//AS A CHILD MENU
 		//Is this menu expanded?
 		bool expanded;
-		//Draw this menu, even if it isn't expanded?
-		bool draw_if_unexpanded;
 		//The function called when this menu is selected (as if it is a button)
 		void (*activation_function)();
 		//The function called just before the button's graphic is drawn
@@ -70,11 +68,62 @@ namespace fgr {
 		//The menu indices this button connects to, in the order up, down, left, right
 		edex adjacencies[4];
 	public:
+		//(menu) Draw this menu, even if it has childeren currently being shown?
+		bool draw_if_unfocused;
+		//(child menu) Draw this menu, even if it isn't expanded?
+		bool draw_if_unexpanded;
+		void hide() {
+			show_this = false;
+		}
 		//Default constructor
 		menu() {
+			my_index = 0;
+			for (unsigned int a = 0; a < 4; ++a) {
+				adjacencies[a] = my_index;
+			}
+			activation_function = nullptr;
+			pre_render_button_function = nullptr;
+			post_render_button_function = nullptr;
+			pre_render_menu_function = nullptr;
+			post_render_menu_function = nullptr;
 			selectedElement = 0;
 			homeElement = 0;
 			nest = NULL;
+			button_scale.x(1.0f);
+			button_scale.y(1.0f);
+			menu_scale.x(5.0f);
+			menu_scale.y(5.0f);
+			is_menu = false;
+			expanded = false;
+			draw_if_unexpanded = false;
+			focused = false;
+			draw_if_unfocused = false;
+			show_this = true;
+		}
+		//Use this constructor if making a submenu who is just a button
+		menu(const graphic& body, point location, point scale, edex* adjnums, void (*confunc)() = nullptr) : menu() {
+			button_body = body;
+			button_location = location;
+			button_scale = scale;
+			for (edex e = 0; e < 4; ++e) {
+				adjacencies[e] = adjnums[e];
+			}
+			activation_function = confunc;
+		}
+		//More useful constructor, depends on the previous
+		menu(const std::string& bodypath, point location, point scale, int buttonc, menu* buttonv, void (*choosefunc)(edex) = nullptr) : menu(){
+			graphicFromFile(menu_body, bodypath);
+			focused = true;
+			expanded = true; //DELETE THIS LINE LATER
+			is_menu = true;
+			child_activation_function = choosefunc;
+			menu_scale = scale;
+			menu_location = location;
+			for (int i = 0; i < buttonc; ++i) {
+				elements.push_back(buttonv[i]);
+				elements.back().nest = this;
+				elements.back().my_index = elements.size() - 1;
+			}
 		}
 		//Navigate in a particular direction enumerated { UP, DOWN, LEFT, RIGHT }
 		void move(direction dirNum) {
@@ -107,15 +156,33 @@ namespace fgr {
 		}
 		//'activate' the selected element and return its ID
 		edex confirmget() {
-			confirm_selected;
+			confirm_selected();
 			return selectedElement;
 		}
-		//TODO: Copy constructors for botha these
+		//Send a 'click' to this menu, who will activate the appropriate button if there is one
+		edex sendclick(const point& location, bool allow_multiple = false) {
+			for (edex e = 0; e < elements.size(); ++e) {
+				if (elements[e].button_body.bounds().contains(location)) {
+					confirm_element(e);
+					selectedElement = e;
+					return e;
+				}
+			}
+			return -1;
+		}
+		//Send a 'hover' to this menu, who will focus the appropriate button if there is one
+		edex sendhover(const point& location) {
+
+		}
+
+		//TODO: Copy constructor
 
 		friend void draw(const menu& obj);
 	};
 
 	void draw(const menu& obj) {
+		if (!obj.show_this)
+			return;
 		//First draw its button form IF it has one
 		if (obj.nest) {
 			glPushMatrix();

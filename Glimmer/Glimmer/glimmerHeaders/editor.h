@@ -8,6 +8,9 @@
 #include <string> 
 #include <utility>
 
+//Forward declare
+class editor;
+
 //This enumerates the types of editor available
 enum editortype { eNULL, eGlyph, eShape, eGraphic, eAnimation, eSpritesheet };
 
@@ -190,6 +193,12 @@ std::string toolName(toolNum which) {
 	}
 }
 
+//FOR TESTING PURPOSESES
+void switchTool(int toTool) {
+	std::cout << toTool << std::endl;
+	return;
+}
+
 //Think of these like tabs
 class editor {
 public:
@@ -263,8 +272,13 @@ public:
 	int spacing = 8;
 	float brushTolerance = 0.0f;
 	//Experimental
-	bool experimentalFractalMode = true;
+	bool experimentalFractalMode = false;
 	int experimentalFractalIterations = 10;
+
+
+	fgr::menu eee[4] = { fgr::menu(), fgr::menu(), fgr::menu(), fgr::menu() };
+	// MENU REPRESENTATION
+	fgr::menu toolsMenu;
 
 	// CONSTRUCTORS
 	//Default constructor
@@ -560,6 +574,7 @@ void editor::defaultSettings() {
 	toolsWidth =				100;
 	//Default tool
 	currentTool = tAppend;
+	toolsMenu = fgr::menu("button1.fgr", fgr::point(toolsPane().left(), toolsPane().bottom()), fgr::point(100.0f, 100.0f), 0, eee, switchTool);
 }
 
 //Load an empty file of a given kind, which will cause loss of unsaved changes
@@ -1146,6 +1161,7 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showTools) {
 		fgr::setcolor(workbench.toolsColor);
 		setViewport(workbench.toolsPane());
+		fgr::draw(workbench.toolsMenu);
 		for (char c : "<Tools>")
 			glutBitmapCharacter(fontNum, c);
 	}

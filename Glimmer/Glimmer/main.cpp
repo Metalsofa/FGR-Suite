@@ -143,12 +143,9 @@ int main(int argc, char** argv) {
 	glutMotionFunc(ActiveMouseMove); //Callback for mouse movement with button down
 	glutPassiveMotionFunc(PassiveMouseMove); //Callback for mouse movement with no button down
 
+
 	//Attempt to load user prefrences
-	std::ifstream prefstream(".glimrc");
-	if (prefstream.is_open()) {
-		cli::gulp(prefstream);
-		prefstream.close();
-	}
+	cli::source(".glimrc");
 
 	initGL();                       // Our own OpenGL initialization
 	glutMainLoop();                 // Enter the event-processing loop

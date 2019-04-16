@@ -186,13 +186,15 @@
   <ItemGroup>
     <None Include="..\..\LICENSE" />
     <None Include="..\..\README.md" />
+    <None Include=".glimrc" />
+    <None Include="COMMANDS.md" />
     <None Include="eoifjwqoepjfpqwoiejfwe" />
     <None Include="h" />
     <None Include="iii" />
     <None Include="untitled.fgl" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="buttonscrap.txt" />
+    <Text Include="button_scrap.txt" />
     <Text Include="freeglut\Copying.txt" />
     <Text Include="freeglut\Readme.txt" />
   </ItemGroup>

@@ -11,7 +11,7 @@
 
 //All keymappings
 std::map<std::string, std::string> bindings;
-//User variables (bash-stype; they only hold text)
+//User variables (bash-style; they only hold text)
 std::unordered_map<std::string, std::string> user_variables;
 
 
@@ -35,6 +35,7 @@ editortype stringToType(const std::string& text) {
 
 // Command-line interface namespace - session variables, not tab variables
 namespace cli {
+	typedef std::list<char> manipstring;
 	//The console is not tab-specific, but session-specific.
 	bool listening = false;
 	bool showLastMessage = false;
@@ -55,13 +56,57 @@ namespace cli {
 		digest(input);
 		input.clear();
 	}
+	//Parse a string and replace variables with their contents
+	std::string var_expand(const std::string& words) {
+		manipstring medium;
+		for (unsigned int i = 0; i < words.size(); ++i)
+			medium.push_back(words[i]);
+		for (std::list<char>::iterator travis = medium.begin(); 
+			travis != medium.end(); 
+			++travis) {
+			if (*travis == '$') {
+				travis = medium.erase(travis);
+				std::string keyword;
+				while (travis != medium.end() && *travis != ' ') {
+					keyword.push_back(*travis);
+					travis = medium.erase(travis);
+				}
+				keyword = user_variables[keyword];
+				for (unsigned int i = 0; i < keyword.size(); ++i) {
+					medium.insert(travis, keyword[i]);
+				}
+				if (travis != medium.begin()) --travis;
+				if (travis == medium.end()) break;
+			}
+		}
+		std::string rets;
+		for (std::list<char>::iterator finale = medium.begin(); 
+			finale != medium.end(); ++finale) {
+			rets.push_back(*finale);
+		}
+		return rets;
+	}
 	//Interpret some input stream as console input
 	void gulp(std::istream& inp) {
 		std::string line;
 		while (std::getline(inp, line)) {
-			if (line.front() == ':')
+			if (line.front() == ':') {
+				line.erase(line.begin());
 				digest(line);
+			}
+			if (line.front() == '"')
+				continue;
 		}
+	}
+	//Execute a set of commands from a text file
+	bool source(const std::string& filename) {
+		std::ifstream prefstream(filename);
+		if (prefstream.is_open()) {
+			cli::gulp(prefstream);
+			prefstream.close();
+			return true;
+		}
+		return false;
 	}
 	//Send a message to the console
 	void send_message(const std::string& mess, uCode urgency = uSuccess) {
@@ -105,9 +150,23 @@ void cli::warnUnsaved() {
 uCode cli::digest(const std::string& token) {
 	if (!token.size())
 		return uSuccess;
-	std::stringstream input(token);
+	std::string reform = var_expand(token);
+	std::stringstream input(reform);
 	std::string command;
 	input >> command;
+	//Variable nonsense
+	if (command == "var") {
+		if (input >> command) {
+			std::string value;
+			std::string varval;
+			while (input >> value) {
+				varval += value + ' ';
+			}
+			user_variables[command] = varval;
+			send_message("Variable " + command + " set to " + varval, uSuccess);
+			return uSuccess;
+		}
+	}
 	//Create a new binding
 	if (command == "map") {
 		std::string whomst;
@@ -128,7 +187,7 @@ uCode cli::digest(const std::string& token) {
 		return uSuccess;
 	}
 	//Quit
-	if (command == "q") {
+	if (command == "q" || command == "quit") {
 		if (currentTab->unsavedChanges && !currentTab->blankFile) {
 			warnUnsaved();
 			return uWarning;
@@ -140,8 +199,26 @@ uCode cli::digest(const std::string& token) {
 			return uSuccess;
 		}
 	}
+	//Force the mouse to warp within the window
+	if (command == "warp" || command == "warpcursor") {
+		int X;
+		if (input >> X) {
+			int Y;
+			if (input >> Y) {
+				glutWarpPointer(X, Y);
+				return uSuccess;
+			}
+		}
+		send_message("Usage is :warp <X> <Y>", uIncorrectUsage);
+		return uIncorrectUsage;
+	}
+	//Force the mouse to click
+	if (command == "click") {
+		send_message("NOT IMPLEMENTED AHHHH");
+		return uError;
+	}
 	//Write
-	if (command == "w") {
+	if (command == "w" || command == "write") {
 		//If the user provides a filename,
 		if (input >> command) {
 			if (!currentTab->unsavedChanges && command == currentTab->getFileName()) {
@@ -174,8 +251,24 @@ uCode cli::digest(const std::string& token) {
 			return uError;
 		}
 	}
+	//Source
+	if (command == "source") {
+		//Ensure a filename was provided
+		if (!(input >> command)) {
+			send_message("Usage is :source <filename>", uIncorrectUsage);
+			return uIncorrectUsage;
+		}
+		else {
+			if (source(command))
+				return uSuccess;
+			else {
+				send_message("Error reading file '" + command + '\'', uError);
+				return uError;
+			}
+		}
+	}
 	//Edit (open)
-	if (command == "e") {
+	if (command == "e" || command == "edit") {
 		//Ensure a filename was specified
 		if (!(input >> command)) {
 			send_message("Usage is :edit <filename>", uIncorrectUsage);
@@ -241,7 +334,7 @@ uCode cli::digest(const std::string& token) {
 			return uSuccess;
 		}
 		else {
-			send_message("Usage is :mode <GLModename/GLModeNum>", uIncorrectUsage);
+			send_message("Usage is :mode <GLModeName/GLModeNum>", uIncorrectUsage);
 			return uIncorrectUsage;
 		}
 	}
@@ -422,6 +515,12 @@ uCode cli::digest(const std::string& token) {
 			send_message("Usage is :convert <target file type>", uIncorrectUsage);
 			return uIncorrectUsage;
 		}
+	}
+	//Toggle experimental fractal mode
+	if (command == "fractog") {
+		currentTab->experimentalFractalMode = !currentTab->experimentalFractalMode;
+		send_message("Fractal mode set to " + std::to_string(currentTab->experimentalFractalMode));
+		return uSuccess;
 	}
 	//Err - invalid command
 	send_message("Invalid command - " + command, uInvalid);
