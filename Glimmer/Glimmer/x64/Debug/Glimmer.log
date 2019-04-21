@@ -1,3 +1,2 @@
 ﻿  main.cpp
-C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrfileops.h(47): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   Glimmer.vcxproj -> C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe
