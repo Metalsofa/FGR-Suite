@@ -4,6 +4,7 @@
 
 #include "gl/glut.h"
 #include "fgrgeometry.h"
+#include "fgrclasses.h"
 
 namespace  fgr {
 
@@ -48,7 +49,12 @@ namespace  fgr {
 	}
 
 	//Like glTranslatef, but it takes a single argument: a point
-	void glTranslatePoint(point& offset) {
+	void glTranslatePoint(const point& offset) {
+		glTranslatef(offset.x(), offset.y(), 0.0f);
+	}
+
+	//Like glScalef, but it takes a single argument: a point
+	void glScalePoint(const point& offset) {
 		glTranslatef(offset.x(), offset.y(), 0.0f);
 	}
 
@@ -153,56 +159,56 @@ namespace  fgr {
 		glEnd();
 	}
 
-	/*Always at (0,0) in the matrix, drawn along the x-axis, left bound is like the phase angle.
-	Resolution represents the number of points used to paint a single crest/trough. Appears clamped by bounds for aesthetic,
-	but only if passed TRUE for the clamping of that bound.*/
-	const fcolor clBlack(0.0f, 0.0f, 0.0f);
-	const fcolor clRed(1.0f, 0.0f, 0.0f);
-	const fcolor clOrange(1.0f, 0.5f, 0.0f);
-	const fcolor clYellow(1.0f, 1.0f, 0.0f);
-	const fcolor clLime(0.5f, 1.0f, 0.0f);
-	const fcolor clGreen(0.0f, 1.0f, 0.0f);
-	const fcolor clTeal(0.0f, 1.0f, 0.5f);
-	const fcolor clCyan(0.0f, 1.0f, 1.0f);
-	const fcolor clIndigo(0.0f, 0.5f, 1.0f);
-	const fcolor clBlue(0.0f, 0.5f, 1.0f);
-	const fcolor clPurple(0.5f, 0.0f, 1.0f);
-	const fcolor clMagenta(1.0f, 0.0f, 1.0f);
-	const fcolor clViolet(1.0f, 0.0f, 0.5f);
-	const fcolor clWhite(1.0f, 0.0f, 1.0f);
+	//Some premade colors
+	namespace colors {
+		const fcolor Black(0.0f, 0.0f, 0.0f);
+		const fcolor Red(1.0f, 0.0f, 0.0f);
+		const fcolor Orange(1.0f, 0.5f, 0.0f);
+		const fcolor Yellow(1.0f, 1.0f, 0.0f);
+		const fcolor Lime(0.5f, 1.0f, 0.0f);
+		const fcolor Green(0.0f, 1.0f, 0.0f);
+		const fcolor Teal(0.0f, 1.0f, 0.5f);
+		const fcolor Cyan(0.0f, 1.0f, 1.0f);
+		const fcolor Indigo(0.0f, 0.5f, 1.0f);
+		const fcolor Blue(0.0f, 0.5f, 1.0f);
+		const fcolor Purple(0.5f, 0.0f, 1.0f);
+		const fcolor Magenta(1.0f, 0.0f, 1.0f);
+		const fcolor Violet(1.0f, 0.0f, 0.5f);
+		const fcolor White(1.0f, 0.0f, 1.0f);
+	}
 
 	//Get a discrete hue from an integer 0-13 inclusive
 	fcolor colorfromID(int colorID) {
 		switch (colorID) {
 		case 0:
-			return clBlack;
+			return colors::Black;
 		case 1:
-			return clRed;
+			return colors::Red;
 		case 2:
-			return clOrange;
+			return colors::Orange;
 		case 3:
-			return clYellow;
+			return colors::Yellow;
 		case 4:
-			return clLime;
+			return colors::Lime;
 		case 5:
-			return clGreen;
+			return colors::Green;
 		case 6:
-			return clTeal;
+			return colors::Teal;
 		case 7:
-			return clCyan;
+			return colors::Cyan;
 		case 8:
-			return clIndigo;
+			return colors::Indigo;
 		case 9:
-			return clBlue;
+			return colors::Blue;
 		case 10:
-			return clPurple;
+			return colors::Purple;
 		case 11:
-			return clMagenta;
+			return colors::Magenta;
 		case 12:
-			return clViolet;
+			return colors::Violet;
 		default:
 		case 13:
-			return clWhite;
+			return colors::White;
 		}
 	}
 
@@ -218,8 +224,9 @@ namespace  fgr {
 	void draw(const fgr::shape &obj) {
 		setcolor(obj.color);
 		glLineWidth(obj.lineThickness);
+		glPointSize(obj.pointSize);
 		glBegin(obj.mode);
-		obj.applyToAll(glVertexPoint);
+			obj.applyToAll(glVertexPoint);
 		glEnd();
 	}
 
@@ -227,7 +234,6 @@ namespace  fgr {
 	void draw(const fgr::graphic& obj) {
 		obj.applyToAll(draw);
 	}
-
 
 	//Use openGL to render an animation at the correct frame
 	void draw(const fgr::animation& obj) {
@@ -239,6 +245,34 @@ namespace  fgr {
 		draw(obj.feed());
 	}
 
+	//Use openGL to render the current form of a spritesheet
+	void draw(const fgr::spritesheet& obj) {
+
+	}
+
+	//Transform according to a fractal's instructions
+	void fractalTransform(const fgr::fractal_mantle& instructions) {
+		glTranslatePoint(instructions.location);
+		glScalef(instructions.scale, instructions.scale, instructions.scale);
+		glRotatef(instructions.rotation / PI * 180, 0.0f, 0.0f, 1.0f);
+	}
+	
+	//Use openGL to render a fractal
+	void draw(const fgr::fractal& pattern, int depth) {
+		glMatrixMode(GL_MODELVIEW);
+		if (depth == 0)
+			return;
+		//Draw the current level
+		draw(pattern);
+		//Draw every other level
+		for (std::size_t i = 0; i < pattern.branchPoints.size(); ++i) {
+			glPushMatrix();
+				fractalTransform(pattern.branchPoints[i]);
+				draw(pattern, depth - 1);
+			glPopMatrix();
+		}
+		return;
+	}
 }
 
 

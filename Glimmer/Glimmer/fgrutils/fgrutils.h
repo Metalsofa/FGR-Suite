@@ -5,5 +5,6 @@
 
 #include "fgrclasses.h"
 #include "fgrdrawing.h"
+#include "fgrmenu.h"
 
 #endif

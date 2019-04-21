@@ -20,7 +20,6 @@ namespace fgr {
 		//This is the point that will be returned
 		float buffer[2];
 		fread(buffer, sizeof(float), 2, stream);
-		std::cout << ferror(stream) << ' ' << feof(stream);
 		return point(buffer[0], buffer[1]);
 	}
 
@@ -29,7 +28,6 @@ namespace fgr {
 		//This is the point that will be returned
 		float buffer[2] = { obj.x(), obj.y() };
 		fwrite(buffer, sizeof(float), 2, stream);
-		std::cout << "POINT " << ferror(stream) << ' ' << feof(stream) << "   " << ftell(stream) << "  "<< sizeof(buffer) << std::endl;
 	}
 
 
@@ -174,8 +172,7 @@ namespace fgr {
 	//Put a frame of an animtion into a file stream
 	void fputframe(const frame& obj, FILE*& stream) {
 		//Write in the delay
-		int delay;
-		fwrite(&delay, sizeof(int), 1, stream);
+		fwrite(&obj.delay, sizeof(int), 1, stream);
 		//Write in the graphic, construct and return the frame
 		fputgraphic(obj, stream);
 	}
@@ -206,8 +203,7 @@ namespace fgr {
 	//Put an animation into a file stream
 	void fputanimation(const animation& obj, FILE*& stream) {
 		//Write in 'cycle'
-		bool cycle = obj.cycle;
-		fwrite(&cycle, sizeof(bool), 1, stream);
+		fwrite(&obj.cycle, sizeof(bool), 1, stream);
 		//Write in the number of frames
 		std::size_t framec = obj.size();
 		fwrite(&framec, sizeof(std::size_t), 1, stream);
@@ -226,7 +222,6 @@ namespace fgr {
 		FILE* fgrfile;
 		fopen_s(&fgrfile, path.c_str(), "rb");
 		if (!fgrfile) return false;
-		std::cout << "BEG: " << ftell(fgrfile) << std::endl;
 		art = fgetglyph(fgrfile);
 		fclose(fgrfile);
 		return true;

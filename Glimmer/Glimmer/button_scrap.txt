@@ -1,0 +1,64 @@
+
+		//Every selectable thing in the menu is one of these
+		class element {
+			// REPRESENTATION
+			//This button must know its own index
+			edex my_index;
+			//How this element should appear when not selected
+			graphic dormant;
+			//How this element should appear when selected
+			graphic ready;
+			//How this element should appear when clicked
+			graphic activated;
+			//The menu indices this button connects to, in the order up, down, left, right
+			edex adjacencies[4];
+			//The function called when this button is activated
+			void (*activation_function)();
+			//The function called just before the button's graphic is drawn
+			void (*pre_render_function)();
+			//The function called just before the button's graphic is drawn
+			void (*post_render_function)();
+			//The position of this button, relative to whatever part of the menu it's a part of.
+			point location;
+			//Pointer to the menu this belongs to
+			menu* nest;
+		public:
+			friend class menu;
+			//Default constructor; avoid using
+			element() {
+				for (unsigned int i = 0; i < 4; ++i) {
+					adjacencies[i] = 0;
+				}
+				activation_function = NULL;
+				my_index = 0;
+				nest = NULL;
+			}
+			//Construct from a menu pointer
+			element(menu* nest_) : element() {
+				nest = nest_;
+				my_index = nest_->elements.size();
+			}
+			//Construct from a menu pointer and a set of adjacencies
+			element(menu* nest_, edex upAdj, edex downAdj, edex leftAdj, edex rightAdj) : element(nest_) {
+				adjacencies[0] = upAdj;
+				adjacencies[1] = downAdj;
+				adjacencies[2] = leftAdj;
+				adjacencies[3] = rightAdj;
+			}
+			//Register the activation callback function for this button
+			void activationFunc(void (*func)()) {
+				activation_function = func;
+			}
+			//Register the pre-rendering instructions for this button
+			void preRenderFunc(void (*func)()) {
+				pre_render_function = func;
+			}
+			//Register the post-rendering instructions for this button
+			void postRenderFunc(void (*func)()) {
+				post_render_function = func;
+			}
+			//Call this function to activate callbacks
+			void confirm() {
+				activation_function();
+			}
+		};

@@ -34,6 +34,9 @@
     <Filter Include="Header Files\freeglut win32 API">
       <UniqueIdentifier>{b4e71d80-0314-4bab-be8b-655b373549cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scrap code">
+      <UniqueIdentifier>{6744005a-b1ce-4197-9ad0-8b410ccc8895}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -92,6 +95,9 @@
     <ClInclude Include="freeglut_win32_API\freeglut32.h">
       <Filter>Header Files\freeglut win32 API</Filter>
     </ClInclude>
+    <ClInclude Include="fgrutils\fgrmenu.h">
+      <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE">
@@ -112,6 +118,12 @@
     <None Include="untitled.fgl">
       <Filter>FGRs</Filter>
     </None>
+    <None Include=".glimrc">
+      <Filter>scrap code</Filter>
+    </None>
+    <None Include="COMMANDS.md">
+      <Filter>Documentation</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="freeglut\Copying.txt">
@@ -119,6 +131,9 @@
     </Text>
     <Text Include="freeglut\Readme.txt">
       <Filter>Documentation\freeglut</Filter>
+    </Text>
+    <Text Include="button_scrap.txt">
+      <Filter>scrap code</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>

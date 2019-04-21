@@ -41,8 +41,8 @@ namespace fgr {
 		//Thanks DP~
 	}
 
-	fcolor::fcolor() { //DP: Simplified initalizer below
-		R = G = B = A = 0.0f;
+	fcolor::fcolor() {
+		R = G = B = A = 1.0f;
 	}
 	fcolor::fcolor(float red, float green, float blue, float alpha) {
 		R = red;
