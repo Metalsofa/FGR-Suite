@@ -1,4 +1,3 @@
-:map o :vertex 0.0 0.0 <cr>
 :var red		1 0 0
 :var orange  1 .5 0
 :var yellow	1 1 0

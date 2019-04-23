@@ -199,6 +199,13 @@ uCode cli::digest(const std::string& token) {
 			return uSuccess;
 		}
 	}
+	//Delete the shape currently being worked on
+	if (command == "dshape") {
+		//This causes a segmentation fault by setting subgraphicshape to currentgraphic()->end()
+		currentTab->subGraphicShape = currentTab->currentGraphic().erase(currentTab->subGraphicShape);
+		if (currentTab->subGraphicShape == currentTab->currentGraphic().end())
+			--currentTab->subGraphicShape;
+	}
 	//Force the mouse to warp within the window
 	if (command == "warp" || command == "warpcursor") {
 		int X;
