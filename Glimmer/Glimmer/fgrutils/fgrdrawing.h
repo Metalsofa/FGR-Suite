@@ -218,6 +218,7 @@ namespace  fgr {
 		//glShadeModel(GL_FLAT);
 		glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, obj.size(), pointData);
 		glEnable(GL_MAP1_VERTEX_3);
+		glEnable(GL_LINE_SMOOTH);
 		glBegin(obj.mode);
 			GLfloat denominator(resolution);
 			for (unsigned int i = 0; i < resolution; ++i) {
@@ -225,6 +226,7 @@ namespace  fgr {
 			}
 		glEnd();
 		glDisable(GL_MAP1_VERTEX_3);
+		glDisable(GL_LINE_SMOOTH);
 		delete[] pointData;
 		return;
 	}

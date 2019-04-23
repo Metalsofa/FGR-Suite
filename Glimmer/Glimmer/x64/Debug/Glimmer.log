@@ -1,12 +1,12 @@
 ﻿  main.cpp
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(219): warning C4267: 'argument': conversion from 'size_t' to 'GLint', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(222): warning C4244: 'initializing': conversion from 'unsigned int' to 'GLfloat', possible loss of data
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(223): warning C4244: 'initializing': conversion from 'unsigned int' to 'GLfloat', possible loss of data
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrmenu.h(125): warning C4267: '=': conversion from 'size_t' to 'fgr::menu::edex', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1100): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1099): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1106): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1125): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1178): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1177): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1184): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1203): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\controls.h(346): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\controls.h(347): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(663): warning C4715: 'editor::currentGraphic': not all control paths return a value
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(703): warning C4715: 'editor::currentGraphic': not all control paths return a value
   Glimmer.vcxproj -> C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe

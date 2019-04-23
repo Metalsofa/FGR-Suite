@@ -267,18 +267,56 @@ public:
 		bool showTools;
 		GLint toolsWidth;
 		fgr::fcolor toolsColor;
-	//Some other minor variables
+	//History (think of this editor like a node)
+	//Heap pointer to the previous state
+	editor* prevstate = NULL;
+	editor* nextstate = NULL;
+	//Some other minor variables and/or prefs
 	int margin = 5;
 	int spacing = 8;
 	float brushTolerance = 0.0f;
+	//Whether the skeleton should be shown
+	bool show_skeleton = false;
 	//Experimental
 	bool experimentalFractalMode = false;
 	int experimentalFractalIterations = 10;
 
-
+	//Trying to get this feature working
 	fgr::menu eee[4] = { fgr::menu(), fgr::menu(), fgr::menu(), fgr::menu() };
 	// MENU REPRESENTATION
 	fgr::menu toolsMenu;
+
+	//Recursively destroy the future
+	void destroyFuture() {
+		if (nextstate) {
+			nextstate->prevstate = NULL;
+			delete nextstate;
+		}
+		return;
+	}
+
+	//Recursively destroy the past
+	void destroyPast() {
+		if (prevstate) {
+			prevstate->nextstate = NULL;
+			delete prevstate;
+		}
+	}
+
+	//Call this every time the user makes a change
+	void makechange() {
+		return;
+		unsavedChanges = true;
+		editor* temp = prevstate;
+		prevstate = new editor(*this);
+		prevstate->prevstate = temp;
+		if (prevstate->prevstate)
+			prevstate->prevstate->nextstate = prevstate;
+		prevstate->nextstate = this;
+		//This has safeguards for if there is no future
+		destroyFuture();
+		return;
+	}
 
 	// CONSTRUCTORS
 	//Default constructor
@@ -418,6 +456,8 @@ public:
 	//Deletes all art before going out of scope
 	~editor() {
 		deleteAllArt();
+		destroyFuture();
+		destroyPast();
 	}
 
 	// EDITING FUNCTIONALITIES
@@ -449,7 +489,7 @@ public:
 	//Add a point to the glyph
 	void pushBackPoint(int x, int y) {
 		currentGlyph().push_back(mapPixel(x, y));
-		unsavedChanges = true;
+		makechange();
 		return;
 	}
 	//Get the ID of the reigon a particular pixel is in
@@ -754,7 +794,7 @@ void editor::convertFile(editortype newformat) {
 	}
 	filepath += associatedExtention(format);
 	configureLayout(format);
-	unsavedChanges = true;
+	makechange();
 	return;
 }
 
@@ -1040,6 +1080,44 @@ void editor::renderArt() const {
 			break;
 		default:
 			assert(0 && "INVALID GRAPHIC TYPE");
+			break;
+		}
+		if (show_skeleton) {
+			glPointSize(4.0f);
+			glLineWidth(3.0f);
+			if (format != eGlyph) {
+				//Use the inverse color
+				fgr::setcolor(fgr::fcolorInverse(currentShape().color));
+				glBegin(GL_LINE_STRIP);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				//Now use the shape color
+				fgr::setcolor(currentShape().color);
+				glLineWidth(1.0f);
+				glBegin(GL_LINE_STRIP);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				//Back to the inverse color
+				fgr::setcolor(fgr::fcolorInverse(currentShape().color));
+				glBegin(GL_POINTS);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				//Back to the shape color
+				fgr::setcolor(currentShape().color);
+				glPointSize(2.0f);
+				glBegin(GL_POINTS);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+			}
+			else {
+				glColor3f(1, 0, 0);
+				glBegin(GL_POINTS);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				glBegin(GL_LINE_STRIP);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+			}
 		}
 	glPopMatrix();
 }

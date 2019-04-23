@@ -28,7 +28,7 @@ namespace fgr {
 
 	};
 
-	fcolor fcolorInverse(fcolor& col);
+	fcolor fcolorInverse(fcolor col);
 
 	//This function is presently incomplete
 	fcolor fcolorFromHSV(float hue, float saturation, float value);
@@ -99,10 +99,10 @@ namespace fgr {
 	void fcolor::invert() {
 		R = 1 - R;
 		G = 1 - G;
-		B = 1 - G;
+		B = 1 - B;
 	}
 
-	fcolor fcolorInverse(fcolor& col) {
+	fcolor fcolorInverse(fcolor col) {
 		col.invert();
 		return col;
 	}
