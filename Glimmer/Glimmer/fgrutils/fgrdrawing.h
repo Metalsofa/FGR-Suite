@@ -212,12 +212,36 @@ namespace  fgr {
 		}
 	}
 
+	//Plot a bezier using a set of points at the specified resolution
+	void drawBezier(const fgr::glyph& obj, unsigned int resolution) {
+		float* pointData = obj.compile3f();
+		//glShadeModel(GL_FLAT);
+		glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, obj.size(), pointData);
+		glEnable(GL_MAP1_VERTEX_3);
+		glBegin(obj.mode);
+			GLfloat denominator(resolution);
+			for (unsigned int i = 0; i < resolution; ++i) {
+				glEvalCoord1f((GLfloat)i / denominator);
+			}
+		glEnd();
+		glDisable(GL_MAP1_VERTEX_3);
+		delete[] pointData;
+		return;
+	}
+	
+	//A global variable within this namespace for bezier resolution
+	unsigned int BEZIER_RESOLUTION = 100;
 
 	//Use openGL to render a glyph at the origin of the matrix
 	void draw(const fgr::glyph &obj) {
+		if (obj.bezier) {
+			drawBezier(obj, BEZIER_RESOLUTION);
+			return;
+		}
 		glBegin(obj.mode);
 			obj.applyToAll(glVertexPoint);
 		glEnd();
+		return;
 	}
 
 	//Use openGL to render a shape at the origin of the matrix
@@ -225,9 +249,8 @@ namespace  fgr {
 		setcolor(obj.color);
 		glLineWidth(obj.lineThickness);
 		glPointSize(obj.pointSize);
-		glBegin(obj.mode);
-			obj.applyToAll(glVertexPoint);
-		glEnd();
+		draw((glyph) obj);
+		return;
 	}
 
 	//Use openGL to render a graphic at the origin of the matrix

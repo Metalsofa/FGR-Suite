@@ -329,11 +329,28 @@ uCode cli::digest(const std::string& token) {
 		}
 		return uSuccess;
 	}
+	//Change the bezier resolution
+	if (command == "bezres") {
+		unsigned int new_res;
+		if (input >> new_res) {
+			fgr::BEZIER_RESOLUTION = new_res;
+			send_message("Bezier resolution set to " + std::to_string(new_res));
+			return uSuccess;
+		}
+		send_message("Usage is :bezres <int new_resolution>", uIncorrectUsage);
+		return uIncorrectUsage;
+	}
+	//Toggle bezier status of the current glyph
+	if (command == "bez" || command == "bezier") {
+		currentTab->currentGlyph().bezier = !currentTab->currentGlyph().bezier;
+		send_message("Current glyph's bezier status set to " + std::to_string(currentTab->currentGlyph().bezier));
+		return uSuccess;
+	}
 	//Change current glyph GL Mode
 	if (command == "mode") {
 		//Ensure another mode was specified
 		if (input >> command) {
-			int interpretation = (std::stoi(command) % 10);
+			int interpretation = (std::stoi(command) % 11);
 			//For now, interpret as plan integer
 			currentTab->currentGlyph().mode = static_cast<fgr::GLmode>(interpretation);
 

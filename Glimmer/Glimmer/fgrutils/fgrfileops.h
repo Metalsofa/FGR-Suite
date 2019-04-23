@@ -34,14 +34,17 @@ namespace fgr {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//		GLYPH BINARY STRUCTURE
 	//
-	//	| GLmode GLMODE | STD::SIZE_T POINT_COUNT | FLOAT X_1 | FLOAT Y_1 | FLOAT X_2 | FLOAT Y_2 | ... | FLOAT X_N | FLOAT Y_N |
+	//	| GLmode GLMODE | BOOL BEZIER | STD::SIZE_T POINT_COUNT | FLOAT X_1 | FLOAT Y_1 | FLOAT X_2 | FLOAT Y_2 | ... | FLOAT X_N | FLOAT Y_N |
 	//
 
 	//Get a glyph from a file stream
 	glyph fgetglyph(FILE*& stream) {
 		//Read in the GLmode of this glyph
-		GLmode GLMODE = glPoints;
+		GLmode GLMODE;
 		fread(&GLMODE, sizeof(GLmode), 1, stream);
+		//Read in bezier status
+		bool BEZIER;
+		fread(&BEZIER, sizeof(bool), 1, stream);
 		//Read in the number of points in the glyph
 		std::size_t POINTC;
 		fread(&POINTC, sizeof(std::size_t), 1, stream);
@@ -51,13 +54,15 @@ namespace fgr {
 			pointData.push_back(fgetpoint(stream));
 		}
 		//Construct and return the glyph object
-		return glyph(GLMODE, pointData);
+		return glyph(GLMODE, BEZIER, pointData);
 	}
 
 	//Put a glyph into a file stream
 	void fputglyph(const glyph& obj, FILE*& stream) {
 		//Write in the GLmode of this glyph
 		fwrite(&obj.mode, sizeof(GLmode), 1, stream);
+		//Write in the bezier status of this glyph
+		fwrite(&obj.bezier, sizeof(bool), 1, stream);
 		//Write in the number of points in the glyph
 		std::size_t POINTC = obj.size();
 		fwrite(&POINTC, sizeof(std::size_t), 1, stream);
@@ -65,6 +70,7 @@ namespace fgr {
 		for (glyphContainer::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
 			fputpoint(*itr, stream);
 		}
+		return;
 	}
 
 

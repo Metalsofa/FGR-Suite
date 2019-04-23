@@ -1,6 +1,7 @@
 ﻿  main.cpp
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(219): warning C4267: 'argument': conversion from 'size_t' to 'GLint', possible loss of data
+C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(222): warning C4244: 'initializing': conversion from 'unsigned int' to 'GLfloat', possible loss of data
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrmenu.h(125): warning C4267: '=': conversion from 'size_t' to 'fgr::menu::edex', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(577): warning C4244: 'argument': conversion from 'GLint' to 'float', possible loss of data
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1100): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1099): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
 C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1106): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data

@@ -574,7 +574,7 @@ void editor::defaultSettings() {
 	toolsWidth =				100;
 	//Default tool
 	currentTool = tAppend;
-	toolsMenu = fgr::menu("button1.fgr", fgr::point(toolsPane().left(), toolsPane().bottom()), fgr::point(100.0f, 100.0f), 0, eee, switchTool);
+	//toolsMenu = fgr::menu("button1.fgr", fgr::point(toolsPane().left(), toolsPane().bottom()), fgr::point(100.0f, 100.0f), 0, eee, switchTool);
 }
 
 //Load an empty file of a given kind, which will cause loss of unsaved changes
@@ -1161,7 +1161,7 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showTools) {
 		fgr::setcolor(workbench.toolsColor);
 		setViewport(workbench.toolsPane());
-		fgr::draw(workbench.toolsMenu);
+		//fgr::draw(workbench.toolsMenu);
 		for (char c : "<Tools>")
 			glutBitmapCharacter(fontNum, c);
 	}
