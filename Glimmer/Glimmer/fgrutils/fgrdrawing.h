@@ -214,6 +214,8 @@ namespace  fgr {
 
 	//Plot a bezier using a set of points at the specified resolution
 	void drawBezier(const fgr::glyph& obj, unsigned int resolution) {
+		if (!obj.size())
+			return;
 		float* pointData = obj.compile3f();
 		//glShadeModel(GL_FLAT);
 		glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, obj.size(), pointData);

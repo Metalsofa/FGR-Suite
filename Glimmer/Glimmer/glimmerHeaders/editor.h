@@ -492,6 +492,18 @@ public:
 		makechange();
 		return;
 	}
+	//Insert a point on the shape near the cursor
+	void insertPoint(int x, int y) {
+		fgr::point dot = mapPixel(x, y);
+		std::pair<fgr::glyphContainer::const_iterator, fgr::point> dest = fgr::nearestCollinearPointMesh(currentGlyph(), dot);
+		currentGlyph().insert(dest.first, dest.second);
+		makechange();
+		return;
+	}
+	void movePoint(int x, int y) {
+
+		return;
+	}
 	//Get the ID of the reigon a particular pixel is in
 	reigonNum reigonID(int x, int y) {
 		//Transform the y-coordinate

@@ -143,9 +143,18 @@ void leftClick(int x, int y) {
 			//Action depends on tool
 			switch (currentTab->currentTool) {
 				case tAppend:
-				currentTab->pushBackPoint(x, y);
-				renderScene();
-				return;
+					currentTab->pushBackPoint(x, y);
+					renderScene();
+					return;
+				case tInsert:
+					if (currentTab->currentGlyph().size() < 2) return;
+					currentTab->insertPoint(x, y);
+					renderScene();
+					return;
+				case tMovePoint:
+					currentTab->movePoint(x, y);
+					renderScene();
+					return;
 			}
 		case rAnimationFrames:
 			cli::send_message("Animation Frames");
