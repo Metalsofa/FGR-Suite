@@ -90,6 +90,8 @@ namespace cli {
 	void gulp(std::istream& inp) {
 		std::string line;
 		while (std::getline(inp, line)) {
+			if (!line.size())
+				continue;
 			if (line.front() == ':') {
 				line.erase(line.begin());
 				digest(line);

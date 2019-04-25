@@ -226,6 +226,8 @@ public:
 	float rotation;
 	//What tool is currently selected
 	toolNum currentTool;
+	//If there is a singular vertex inder the cursor, point to it with this
+	fgr::point* in_hand_vertex = NULL;
 	//If we're editing a graphic, this points to the shape in it we are currently at.
 	fgr::graphicContainer::iterator subGraphicShape;
 	// Settings as to whether different editor panes are open, and their sizes when open
@@ -493,15 +495,32 @@ public:
 		return;
 	}
 	//Insert a point on the shape near the cursor
-	void insertPoint(int x, int y) {
+	fgr::glyph::iterator insertPoint(int x, int y) {
 		fgr::point dot = mapPixel(x, y);
 		std::pair<fgr::glyphContainer::const_iterator, fgr::point> dest = fgr::nearestCollinearPointMesh(currentGlyph(), dot);
-		currentGlyph().insert(dest.first, dest.second);
 		makechange();
-		return;
+		return currentGlyph().insert(dest.first, dest.second);
 	}
 	void movePoint(int x, int y) {
-
+		float epsilon = 0.005f / zoom;
+		fgr::point dot = mapPixel(x, y);
+		for (fgr::glyph::reverse_iterator itr = currentGlyph().rbegin(); itr != currentGlyph().rend(); ++itr) {
+			if ((*itr - dot).magnitude() < epsilon) {
+				*itr = dot;
+				in_hand_vertex = &(*itr);
+			}
+		}
+		return;
+	}
+	void deletePoint(int x, int y) {
+		float epsilon = 0.005f / zoom;
+		fgr::point dot = mapPixel(x, y);
+		for (fgr::glyph::iterator itr = currentGlyph().begin(); itr != currentGlyph().end(); ++itr) {
+			if ((*itr - dot).magnitude() < epsilon) {
+				currentGlyph().erase(itr);
+				return;
+			}
+		}
 		return;
 	}
 	//Get the ID of the reigon a particular pixel is in

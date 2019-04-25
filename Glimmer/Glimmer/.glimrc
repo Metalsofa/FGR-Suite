@@ -1,3 +1,5 @@
+" VARIABLES
+" Some colors
 :var red		1 0 0
 :var orange  1 .5 0
 :var yellow	1 1 0
@@ -10,3 +12,19 @@
 :var purple .5 0 1
 :var magenta 1 0 1
 :var hotpink 1 0 .5
+
+" DEFAULT SETTINGS
+:skel
+
+" MAPPINGS
+" Settings
+:map s :skel<cr>
+" Navigation
+:map j :shapen<cr>
+:map k :shapep<cr>
+:map a :tool 1<cr>
+:map i :tool 2<cr>
+:map e :tool 3<cr> 
+:map m :tool 4<cr>
+
+:map b :tool 7<cr>

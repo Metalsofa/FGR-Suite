@@ -212,6 +212,23 @@ namespace  fgr {
 		}
 	}
 
+	//Map a 2D parametric function to a compiled instruction list and return the handle
+	template<class num>
+	GLuint compilePlot(point(*func)(num), num begin, num end, unsigned int resolution) {
+		num step = (end - begin) / num(resolution);
+		//Plot every point into the graph
+		//This value will be returned
+		GLuint listHandle = glGenLists(1);
+		glNewList(listHandle, GL_COMPILE);
+			glBegin(GL_LINE_STRIP);
+			for (num i = 0; i < resolution; ++i) {
+				glVertexPoint(func(step * i));
+			}
+			glEnd();
+		glEndList();
+		return listHandle;
+	}
+
 	//Plot a bezier using a set of points at the specified resolution
 	void drawBezier(const fgr::glyph& obj, unsigned int resolution) {
 		if (!obj.size())
@@ -248,6 +265,15 @@ namespace  fgr {
 		return;
 	}
 
+	//Compile a glyph object
+	GLuint compile(const fgr::glyph& obj) {
+		GLuint reti = glGenLists(1);
+		glNewList(reti, GL_COMPILE);
+		draw(obj);
+		glEndList();
+		return reti;
+	}
+
 	//Use openGL to render a shape at the origin of the matrix
 	void draw(const fgr::shape &obj) {
 		setcolor(obj.color);
@@ -257,9 +283,27 @@ namespace  fgr {
 		return;
 	}
 
+	//Compile a shape object
+	GLuint compile(const fgr::shape& obj) {
+		GLuint reti = glGenLists(1);
+		glNewList(reti, GL_COMPILE);
+		draw(obj);
+		glEndList();
+		return reti;
+	}
+
 	//Use openGL to render a graphic at the origin of the matrix
 	void draw(const fgr::graphic& obj) {
 		obj.applyToAll(draw);
+	}
+
+	//Compile a graphic object
+	GLuint compile(const fgr::graphic& obj) {
+		GLuint reti = glGenLists(1);
+		glNewList(reti, GL_COMPILE);
+		draw(obj);
+		glEndList();
+		return reti;
 	}
 
 	//Use openGL to render an animation at the correct frame
