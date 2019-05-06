@@ -5,6 +5,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <list>
 #include <algorithm>
 
 namespace fgr {
@@ -417,6 +418,44 @@ namespace fgr {
 		}
 		//Otherwise we find the perpendicular path to the segment
 		return distancetoline(dot, seg);
+	}
+
+	//Finds the nearest point on a segment to a given point
+	inline point nearestCollinear(const point& dot, const segment& seg) {
+		//Thanks to https://stackoverflow.com/questions/3120357/get-closest-point-to-a-line
+		point a_to_p = dot - seg.p1;
+		point a_to_b = seg.p2 - seg.p1;
+		float oregon_trail = dotproduct(a_to_p, a_to_b);
+		float oregon_pike = a_to_p.x() * a_to_p.x() + a_to_p.y() * a_to_p.y();
+		float t = oregon_pike / oregon_trail;
+		return seg.p1 + (a_to_b * t);
+	}
+
+	//Finds the nearest point on the segments formed by a set of points to a given point, and an iterator to the one it comes after
+	inline std::pair<std::list<point>::const_iterator, point> nearestCollinearPointMesh(const std::list<point>& mesh, point loc) throw(const std::list<point>&) {
+		if (!mesh.size()) throw mesh;
+		std::list<point>::const_iterator winner;
+		float winnerdist;
+		float thisdist;
+		std::list<point>::const_iterator prev;
+		for (std::list<point>::const_iterator itr = mesh.begin(); itr != mesh.end(); ++itr) {
+			if (itr == mesh.begin()) {
+				winner = prev = itr;
+				++itr;
+				winnerdist = distancetoseg(loc, segment(*prev, *itr));
+				--itr;
+				continue;
+			}
+			thisdist = distancetoseg(loc, segment(*prev, *itr));
+			//If we've found a new winner,
+			if (thisdist < winnerdist) {
+				winner = prev;
+				winnerdist = thisdist;
+			}
+			prev = itr;
+		}
+		prev = winner++;
+		return std::make_pair(winner, nearestCollinear(loc, segment(*prev, *winner)));
 	}
 
 	//Returns the given point after refection about an axis defined by a given segment

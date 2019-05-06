@@ -90,6 +90,8 @@ namespace cli {
 	void gulp(std::istream& inp) {
 		std::string line;
 		while (std::getline(inp, line)) {
+			if (!line.size())
+				continue;
 			if (line.front() == ':') {
 				line.erase(line.begin());
 				digest(line);
@@ -198,6 +200,14 @@ uCode cli::digest(const std::string& token) {
 			send_message("Closed tab '" + filename + '\'');
 			return uSuccess;
 		}
+	}
+	//Delete the shape currently being worked on
+	if (command == "dshape") {
+		//This causes a segmentation fault by setting subgraphicshape to currentgraphic()->end()
+		currentTab->subGraphicShape = currentTab->currentGraphic().erase(currentTab->subGraphicShape);
+		currentTab->makechange();
+		if (currentTab->subGraphicShape == currentTab->currentGraphic().end())
+			--currentTab->subGraphicShape;
 	}
 	//Force the mouse to warp within the window
 	if (command == "warp" || command == "warpcursor") {
@@ -322,14 +332,55 @@ uCode cli::digest(const std::string& token) {
 		}
 		return uSuccess;
 	}
+	//Clone the current shape to the next layer
+	if (command == "cshapen" || command == "cshape") {
+		//Make another shape
+		currentTab->subGraphicShape = currentTab->currentGraphic().insert(currentTab->subGraphicShape, currentTab->currentShape());
+		currentTab->makechange();
+		send_message("Cloned shape to next layer");
+		return uSuccess;
+	}
+	//Clone the current shape to the previous layer
+	if (command == "cshapep") {
+		//Make another shape
+		currentTab->subGraphicShape = currentTab->currentGraphic().insert(currentTab->subGraphicShape, currentTab->currentShape());
+		currentTab->makechange();
+		--currentTab->subGraphicShape;
+		send_message("Cloned shape to previous layer");
+		return uSuccess;
+	}
+	//Toggle showing the glyph skeleton
+	if (command == "skel" || command == "skeleton") {
+		currentTab->show_skeleton = !(currentTab->show_skeleton);
+		send_message("show_skeleton set to " + std::to_string(currentTab->show_skeleton));
+		return uSuccess;
+	}
+	//Change the bezier resolution
+	if (command == "bezres") {
+		unsigned int new_res;
+		if (input >> new_res) {
+			fgr::BEZIER_RESOLUTION = new_res;
+			send_message("Bezier resolution set to " + std::to_string(new_res));
+			return uSuccess;
+		}
+		send_message("Usage is :bezres <int new_resolution>", uIncorrectUsage);
+		return uIncorrectUsage;
+	}
+	//Toggle bezier status of the current glyph
+	if (command == "bez" || command == "bezier") {
+		currentTab->currentGlyph().bezier = !currentTab->currentGlyph().bezier;
+		currentTab->makechange();
+		send_message("Current glyph's bezier status set to " + std::to_string(currentTab->currentGlyph().bezier));
+		return uSuccess;
+	}
 	//Change current glyph GL Mode
 	if (command == "mode") {
 		//Ensure another mode was specified
 		if (input >> command) {
-			int interpretation = (std::stoi(command) % 10);
+			int interpretation = (std::stoi(command) % 11);
 			//For now, interpret as plan integer
 			currentTab->currentGlyph().mode = static_cast<fgr::GLmode>(interpretation);
-
+			currentTab->makechange();
 			send_message("Glyph GL Mode set to " + std::string(currentTab->currentGlyph().glModeString()), uSuccess);
 			return uSuccess;
 		}
@@ -341,6 +392,7 @@ uCode cli::digest(const std::string& token) {
 	//Clear the canvas on the current layer
 	if (command == "clear") {
 		currentTab->currentGlyph().clear();
+		currentTab->makechange();
 		return uSuccess;
 	}
 	//Set the experimental fractal mode depth level
@@ -365,6 +417,7 @@ uCode cli::digest(const std::string& token) {
 	}
 	if (command == "nshapen" || command == "nshape") {
 		currentTab->subGraphicShape = currentTab->currentGraphic().insert(++currentTab->subGraphicShape, fgr::shape());
+		currentTab->makechange();
 		return uSuccess;
 	}
 	if (command == "shapep") {
@@ -374,6 +427,7 @@ uCode cli::digest(const std::string& token) {
 	}
 	if (command == "nshapep") {
 		currentTab->subGraphicShape = currentTab->currentGraphic().insert(currentTab->subGraphicShape, fgr::shape());
+		currentTab->makechange();
 		return uSuccess;
 	}
 	//Toggle distraction-free mode
@@ -403,10 +457,12 @@ uCode cli::digest(const std::string& token) {
 				float newA;
 				if (input >> newA) {
 					currentTab->currentShape().color = fgr::fcolor(newR, newG, newB, newA);
+					currentTab->makechange();
 					return uSuccess;
 				}
 				else {
 					currentTab->currentShape().color = fgr::fcolor(newR, newG, newB);
+					currentTab->makechange();
 					return uSuccess;
 				}
 			}
@@ -432,11 +488,12 @@ uCode cli::digest(const std::string& token) {
 			float newW;
 			if (input >> newW) {
 				currentTab->currentShape().lineThickness = newW;
+				currentTab->makechange();
 				return uSuccess;
 			}
 			//Otherwise, tell them what's what
 			else {
-				send_message( "Like width - " +
+				send_message( "Line width - " +
 					std::to_string(currentTab->currentShape().lineThickness) + 
 					" pixels", uSuccess);
 				return uSuccess;
@@ -452,6 +509,7 @@ uCode cli::digest(const std::string& token) {
 		float vX, vY;
 		if (input >> vX && input >> vY) {
 			currentTab->currentGlyph().push_back(fgr::point(vX, vY));
+			currentTab->makechange();
 			send_message("Vertex added at " + currentTab->currentGlyph().back().label(), uSuccess);
 			return uSuccess;
 		}
@@ -460,6 +518,11 @@ uCode cli::digest(const std::string& token) {
 			return uIncorrectUsage;
 		}
 	}
+	//Experimental undo
+	if (command == "undo") {
+		send_message("We're not there yet.", uError);
+		return uError;
+	}
 	//Change current shape point size
 	if ( command == "ps" || command == "pointsize") {
 		if (currentTab->format != eGlyph) {
@@ -467,6 +530,8 @@ uCode cli::digest(const std::string& token) {
 			float newP;
 			if (input >> newP) {
 				currentTab->currentShape().pointSize = newP;
+				currentTab->makechange();
+				send_message("Set point size to " + std::to_string(currentTab->currentShape().pointSize));
 				return uSuccess;
 			}
 			//Otherwise, tell them what's what

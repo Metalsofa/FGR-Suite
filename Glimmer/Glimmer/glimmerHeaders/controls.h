@@ -143,9 +143,25 @@ void leftClick(int x, int y) {
 			//Action depends on tool
 			switch (currentTab->currentTool) {
 				case tAppend:
-				currentTab->pushBackPoint(x, y);
-				renderScene();
-				return;
+					currentTab->pushBackPoint(x, y);
+					renderScene();
+					return;
+				case tInsert: {
+					//Holding the left-mouse button shows where the point would be put
+					if (currentTab->currentGlyph().size() < 2) return;
+					fgr::glyph::iterator rid = currentTab->insertPoint(x, y);
+					renderScene();
+					currentTab->currentGlyph().erase(rid);
+					return;
+				}
+				case tMovePoint:
+					currentTab->movePoint(x, y);
+					renderScene();
+					return;
+				case tDeletePoint:
+					currentTab->deletePoint(x, y);
+					renderScene();
+					return;
 			}
 		case rAnimationFrames:
 			cli::send_message("Animation Frames");
@@ -182,6 +198,22 @@ void leftClick(int x, int y) {
 			break;
 		}
 	case GLUT_UP:
+		switch (currentTab->reigonID(x, y)) {
+		case rCentral:
+			switch (currentTab->currentTool) {
+			case tInsert:
+				//Finally place the hovering vertex once and for all
+				if (currentTab->currentGlyph().size() < 2) return;
+				currentTab->insertPoint(x, y);
+				renderScene();
+				return;
+			case tMovePoint:
+				//Put down the point that is being held
+				currentTab->in_hand_vertex = NULL;
+				return;
+			}
+			break;
+		}
 
 		break;
 	}
@@ -343,9 +375,24 @@ void ActiveMouseMove(int x, int y) {
 			break;
 		case tBrush:
 			//Holding down the left mouse button deposits points
-			if (!mouseStates[GLUT_LEFT_BUTTON] && (fgr::point(x, y) - fgr::point(mouseMemory[0], 
+			if (!mouseStates[GLUT_LEFT_BUTTON] && (fgr::point(x, y) - fgr::point(mouseMemory[0],
 				mouseMemory[1])).magnitude() > currentTab->brushTolerance) {
 				currentTab->pushBackPoint(x, y);
+				renderScene();
+			}
+			break;
+		case tInsert: {
+			//Holding the left-mouse button shows where the point would be put
+			if (currentTab->currentGlyph().size() < 2) return;
+			fgr::glyph::iterator rid = currentTab->insertPoint(x, y);
+			renderScene();
+			currentTab->currentGlyph().erase(rid);
+			break;
+		}
+		case tMovePoint:
+			//Move the selected vertex around
+			if (currentTab->in_hand_vertex) {
+				*(currentTab->in_hand_vertex) = currentTab->mapPixel(x, y);
 				renderScene();
 			}
 			break;

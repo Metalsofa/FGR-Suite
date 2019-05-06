@@ -226,6 +226,8 @@ public:
 	float rotation;
 	//What tool is currently selected
 	toolNum currentTool;
+	//If there is a singular vertex inder the cursor, point to it with this
+	fgr::point* in_hand_vertex = NULL;
 	//If we're editing a graphic, this points to the shape in it we are currently at.
 	fgr::graphicContainer::iterator subGraphicShape;
 	// Settings as to whether different editor panes are open, and their sizes when open
@@ -267,18 +269,56 @@ public:
 		bool showTools;
 		GLint toolsWidth;
 		fgr::fcolor toolsColor;
-	//Some other minor variables
+	//History (think of this editor like a node)
+	//Heap pointer to the previous state
+	editor* prevstate = NULL;
+	editor* nextstate = NULL;
+	//Some other minor variables and/or prefs
 	int margin = 5;
 	int spacing = 8;
 	float brushTolerance = 0.0f;
+	//Whether the skeleton should be shown
+	bool show_skeleton = false;
 	//Experimental
 	bool experimentalFractalMode = false;
 	int experimentalFractalIterations = 10;
 
-
+	//Trying to get this feature working
 	fgr::menu eee[4] = { fgr::menu(), fgr::menu(), fgr::menu(), fgr::menu() };
 	// MENU REPRESENTATION
 	fgr::menu toolsMenu;
+
+	//Recursively destroy the future
+	void destroyFuture() {
+		if (nextstate) {
+			nextstate->prevstate = NULL;
+			delete nextstate;
+		}
+		return;
+	}
+
+	//Recursively destroy the past
+	void destroyPast() {
+		if (prevstate) {
+			prevstate->nextstate = NULL;
+			delete prevstate;
+		}
+	}
+
+	//Call this every time the user makes a change
+	void makechange() {
+		return;
+		unsavedChanges = true;
+		editor* temp = prevstate;
+		prevstate = new editor(*this);
+		prevstate->prevstate = temp;
+		if (prevstate->prevstate)
+			prevstate->prevstate->nextstate = prevstate;
+		prevstate->nextstate = this;
+		//This has safeguards for if there is no future
+		destroyFuture();
+		return;
+	}
 
 	// CONSTRUCTORS
 	//Default constructor
@@ -418,6 +458,8 @@ public:
 	//Deletes all art before going out of scope
 	~editor() {
 		deleteAllArt();
+		destroyFuture();
+		destroyPast();
 	}
 
 	// EDITING FUNCTIONALITIES
@@ -449,7 +491,36 @@ public:
 	//Add a point to the glyph
 	void pushBackPoint(int x, int y) {
 		currentGlyph().push_back(mapPixel(x, y));
-		unsavedChanges = true;
+		makechange();
+		return;
+	}
+	//Insert a point on the shape near the cursor
+	fgr::glyph::iterator insertPoint(int x, int y) {
+		fgr::point dot = mapPixel(x, y);
+		std::pair<fgr::glyphContainer::const_iterator, fgr::point> dest = fgr::nearestCollinearPointMesh(currentGlyph(), dot);
+		makechange();
+		return currentGlyph().insert(dest.first, dest.second);
+	}
+	void movePoint(int x, int y) {
+		float epsilon = 0.005f / zoom;
+		fgr::point dot = mapPixel(x, y);
+		for (fgr::glyph::reverse_iterator itr = currentGlyph().rbegin(); itr != currentGlyph().rend(); ++itr) {
+			if ((*itr - dot).magnitude() < epsilon) {
+				*itr = dot;
+				in_hand_vertex = &(*itr);
+			}
+		}
+		return;
+	}
+	void deletePoint(int x, int y) {
+		float epsilon = 0.005f / zoom;
+		fgr::point dot = mapPixel(x, y);
+		for (fgr::glyph::iterator itr = currentGlyph().begin(); itr != currentGlyph().end(); ++itr) {
+			if ((*itr - dot).magnitude() < epsilon) {
+				currentGlyph().erase(itr);
+				return;
+			}
+		}
 		return;
 	}
 	//Get the ID of the reigon a particular pixel is in
@@ -574,7 +645,7 @@ void editor::defaultSettings() {
 	toolsWidth =				100;
 	//Default tool
 	currentTool = tAppend;
-	toolsMenu = fgr::menu("button1.fgr", fgr::point(toolsPane().left(), toolsPane().bottom()), fgr::point(100.0f, 100.0f), 0, eee, switchTool);
+	//toolsMenu = fgr::menu("button1.fgr", fgr::point(toolsPane().left(), toolsPane().bottom()), fgr::point(100.0f, 100.0f), 0, eee, switchTool);
 }
 
 //Load an empty file of a given kind, which will cause loss of unsaved changes
@@ -754,7 +825,7 @@ void editor::convertFile(editortype newformat) {
 	}
 	filepath += associatedExtention(format);
 	configureLayout(format);
-	unsavedChanges = true;
+	makechange();
 	return;
 }
 
@@ -1040,6 +1111,44 @@ void editor::renderArt() const {
 			break;
 		default:
 			assert(0 && "INVALID GRAPHIC TYPE");
+			break;
+		}
+		if (show_skeleton) {
+			glPointSize(4.0f);
+			glLineWidth(3.0f);
+			if (format != eGlyph) {
+				//Use the inverse color
+				fgr::setcolor(fgr::fcolorInverse(currentShape().color));
+				glBegin(GL_LINE_STRIP);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				//Now use the shape color
+				fgr::setcolor(currentShape().color);
+				glLineWidth(1.0f);
+				glBegin(GL_LINE_STRIP);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				//Back to the inverse color
+				fgr::setcolor(fgr::fcolorInverse(currentShape().color));
+				glBegin(GL_POINTS);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				//Back to the shape color
+				fgr::setcolor(currentShape().color);
+				glPointSize(2.0f);
+				glBegin(GL_POINTS);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+			}
+			else {
+				glColor3f(1, 0, 0);
+				glBegin(GL_POINTS);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+				glBegin(GL_LINE_STRIP);
+					currentGlyph().applyToAll(fgr::glVertexPoint);
+				glEnd();
+			}
 		}
 	glPopMatrix();
 }
@@ -1161,7 +1270,7 @@ void drawEditor(const editor& workbench) {
 	if (workbench.showTools) {
 		fgr::setcolor(workbench.toolsColor);
 		setViewport(workbench.toolsPane());
-		fgr::draw(workbench.toolsMenu);
+		//fgr::draw(workbench.toolsMenu);
 		for (char c : "<Tools>")
 			glutBitmapCharacter(fontNum, c);
 	}

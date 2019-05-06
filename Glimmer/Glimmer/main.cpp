@@ -6,6 +6,7 @@
 #include <string>
 #include <fstream>
 
+
 bool zen = false;
 
 std::string sessionFilePath;
@@ -105,6 +106,10 @@ void initTabs(int argc, char** argv) {
 	return;
 }
 
+fgr::point testfunc(float t) {
+	return fgr::point(t, sin(t));
+}
+
 //main function; exists to set up a few things and then enter the glut-main-loop
 int main(int argc, char** argv) {
 	//Initialize GLUT
@@ -148,6 +153,7 @@ int main(int argc, char** argv) {
 	cli::source(".glimrc");
 
 	initGL();                       // Our own OpenGL initialization
+
 	glutMainLoop();                 // Enter the event-processing loop
 
 

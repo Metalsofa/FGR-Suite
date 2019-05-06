@@ -212,12 +212,66 @@ namespace  fgr {
 		}
 	}
 
+	//Map a 2D parametric function to a compiled instruction list and return the handle
+	template<class num>
+	GLuint compilePlot(point(*func)(num), num begin, num end, unsigned int resolution) {
+		num step = (end - begin) / num(resolution);
+		//Plot every point into the graph
+		//This value will be returned
+		GLuint listHandle = glGenLists(1);
+		glNewList(listHandle, GL_COMPILE);
+			glBegin(GL_LINE_STRIP);
+			for (num i = 0; i < resolution; ++i) {
+				glVertexPoint(func(step * i));
+			}
+			glEnd();
+		glEndList();
+		return listHandle;
+	}
+
+	//Plot a bezier using a set of points at the specified resolution
+	void drawBezier(const fgr::glyph& obj, unsigned int resolution) {
+		if (!obj.size())
+			return;
+		float* pointData = obj.compile3f();
+		//glShadeModel(GL_FLAT);
+		glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, obj.size(), pointData);
+		glEnable(GL_MAP1_VERTEX_3);
+		glEnable(GL_LINE_SMOOTH);
+		glBegin(obj.mode);
+			GLfloat denominator(resolution);
+			for (unsigned int i = 0; i < resolution; ++i) {
+				glEvalCoord1f((GLfloat)i / denominator);
+			}
+		glEnd();
+		glDisable(GL_MAP1_VERTEX_3);
+		glDisable(GL_LINE_SMOOTH);
+		delete[] pointData;
+		return;
+	}
+	
+	//A global variable within this namespace for bezier resolution
+	unsigned int BEZIER_RESOLUTION = 100;
 
 	//Use openGL to render a glyph at the origin of the matrix
 	void draw(const fgr::glyph &obj) {
+		if (obj.bezier) {
+			drawBezier(obj, BEZIER_RESOLUTION);
+			return;
+		}
 		glBegin(obj.mode);
 			obj.applyToAll(glVertexPoint);
 		glEnd();
+		return;
+	}
+
+	//Compile a glyph object
+	GLuint compile(const fgr::glyph& obj) {
+		GLuint reti = glGenLists(1);
+		glNewList(reti, GL_COMPILE);
+		draw(obj);
+		glEndList();
+		return reti;
 	}
 
 	//Use openGL to render a shape at the origin of the matrix
@@ -225,14 +279,31 @@ namespace  fgr {
 		setcolor(obj.color);
 		glLineWidth(obj.lineThickness);
 		glPointSize(obj.pointSize);
-		glBegin(obj.mode);
-			obj.applyToAll(glVertexPoint);
-		glEnd();
+		draw((glyph) obj);
+		return;
+	}
+
+	//Compile a shape object
+	GLuint compile(const fgr::shape& obj) {
+		GLuint reti = glGenLists(1);
+		glNewList(reti, GL_COMPILE);
+		draw(obj);
+		glEndList();
+		return reti;
 	}
 
 	//Use openGL to render a graphic at the origin of the matrix
 	void draw(const fgr::graphic& obj) {
 		obj.applyToAll(draw);
+	}
+
+	//Compile a graphic object
+	GLuint compile(const fgr::graphic& obj) {
+		GLuint reti = glGenLists(1);
+		glNewList(reti, GL_COMPILE);
+		draw(obj);
+		glEndList();
+		return reti;
 	}
 
 	//Use openGL to render an animation at the correct frame

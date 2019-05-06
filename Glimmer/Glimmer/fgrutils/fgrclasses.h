@@ -19,7 +19,8 @@ namespace fgr {
 	// Enumerate glModes to make it easy to remember
 	enum GLmode {
 		glPoints, glLines, glLineLoop, glLineStrip, glTriangles,
-		glTriangleStrip, glTriangleFan, glQuads, glQuadStrip, glPolygon
+		glTriangleStrip, glTriangleFan, glQuads, glQuadStrip, glPolygon,
+		glBezier
 	};
 
 	//Forward=declarations
@@ -47,17 +48,38 @@ namespace fgr {
 		using glyphContainer::end;
 		// The GLmode by which this glyph should be rendered
 		GLmode mode;
+		// Whether this glyph should be plotted as a bezier
+		bool bezier;
 		//Default constructor
 		glyph() : glyphContainer() {
 			mode = glPoints;
+			bezier = false;
 		}
 		//Copy constructor
 		glyph(const glyph& other) : glyphContainer(other) {
 			mode = other.mode;
+			bezier = other.bezier;
 		}
-		//Know-it-all constructor
+		//Know-it-most constructor
 		glyph(GLmode drawingMode, glyphContainer pointData) : glyphContainer(pointData) {
 			mode = drawingMode;
+			bezier = false;
+		}
+		//Know-it-all constructor
+		glyph(GLmode drawingMode, bool bez, glyphContainer pointData) : glyphContainer(pointData) {
+			mode = drawingMode;
+			bezier = bez;
+		}
+		//Construct and return (on the heap!) an array of floats for use by OpenGL. Be sure to delete it.
+		float* compile3f() const {
+			float* retp = new float[size() * 3];
+			std::size_t i = 0;
+			for (const_iterator p = begin(); p != end(); ++p, ++i) {
+				retp[i * 3 + 0] = p->x();
+				retp[i * 3 + 1] = p->y();
+				retp[i * 3 + 2] = 0.0f;
+			}
+			return retp;
 		}
 		// Inefficient, but just in case, allow indexing.
 		point& operator[] (std::size_t where) {
@@ -158,6 +180,7 @@ namespace fgr {
 		}
 		//Returns the name of the GL drawing mode associated with this shape
 		const char* glModeString() const {
+			if (mode == glBezier) return "FGR_BEZIER";
 			switch (mode % 10) {
 			case 0:
 				return "GL_POINTS";
