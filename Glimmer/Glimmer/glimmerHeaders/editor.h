@@ -1157,6 +1157,8 @@ void editor::renderArt() const {
 void drawEditor(const editor& workbench) {
 	glLineWidth(1.0f);
 	void* fontNum = GLUT_BITMAP_HELVETICA_18;
+	
+
 	//Draw the File Tree
 	if (workbench.showFileTree) {
 		fgr::setcolor(workbench.fileTreeColor);
@@ -1273,6 +1275,10 @@ void drawEditor(const editor& workbench) {
 		//fgr::draw(workbench.toolsMenu);
 		for (char c : "<Tools>")
 			glutBitmapCharacter(fontNum, c);
+	}
+	//Draw the Menus
+	if (workbench.eee) {
+		draw(workbench.eee[0]);
 	}
 	//Draw the central editor
 	if (true) {

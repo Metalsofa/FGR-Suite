@@ -89,6 +89,7 @@ namespace fgr {
 			selectedElement = 0;
 			homeElement = 0;
 			nest = NULL;
+			button_location = point(0, 0);
 			button_scale.x(1.0f);
 			button_scale.y(1.0f);
 			menu_scale.x(5.0f);
@@ -99,7 +100,11 @@ namespace fgr {
 			focused = false;
 			draw_if_unfocused = false;
 			show_this = true;
+			for (edex e = 0; e < 4; e++) { adjacencies[e] = 0; }
+			child_activation_function = nullptr;
+
 		}
+
 		//Use this constructor if making a submenu who is just a button
 		menu(const graphic& body, point location, point scale, edex* adjnums, void (*confunc)() = nullptr) : menu() {
 			button_body = body;
@@ -196,7 +201,7 @@ namespace fgr {
 			glPopMatrix();
 		}
 		//Next draw its menu form IF it has one and is expanded
-		if (obj.is_menu && (obj.expanded || !obj.nest) && (obj.draw_if_unfocused || obj.focused)) {
+		if(true){//if (obj.is_menu && (obj.expanded || !obj.nest) && (obj.draw_if_unfocused || obj.focused)) {
 			glPushMatrix();
 				glTranslatePoint(obj.menu_location);
 				glScalePoint(obj.menu_scale);

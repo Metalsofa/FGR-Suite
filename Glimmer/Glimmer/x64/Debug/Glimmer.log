@@ -1,13 +1,13 @@
 ﻿  main.cpp
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrgeometry.h(435): warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(238): warning C4267: 'argument': conversion from 'size_t' to 'GLint', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(242): warning C4244: 'initializing': conversion from 'unsigned int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrmenu.h(125): warning C4267: '=': conversion from 'size_t' to 'fgr::menu::edex', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1209): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1208): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1215): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1234): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\controls.h(378): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\controls.h(379): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(734): warning C4715: 'editor::currentGraphic': not all control paths return a value
-  Glimmer.vcxproj -> C:\Users\medlod\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrgeometry.h(435): warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(238): warning C4267: 'argument': conversion from 'size_t' to 'GLint', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrdrawing.h(242): warning C4244: 'initializing': conversion from 'unsigned int' to 'GLfloat', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\fgrutils\fgrmenu.h(129): warning C4267: '=': conversion from 'size_t' to 'fgr::menu::edex', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1211): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1210): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1217): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(1236): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\controls.h(378): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\controls.h(379): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\Glimmer\glimmerHeaders\editor.h(734): warning C4715: 'editor::currentGraphic': not all control paths return a value
+  Glimmer.vcxproj -> C:\Users\dp\source\repos\Metalsofa\FGR-Suite\Glimmer\x64\Debug\Glimmer.exe
