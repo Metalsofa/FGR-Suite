@@ -107,7 +107,13 @@ namespace fgr {
 
 		//Use this constructor if making a submenu who is just a button
 		menu(const graphic& body, point location, point scale, edex* adjnums, void (*confunc)() = nullptr) : menu() {
+			//shape s;
+			//for (int i = 0; i < 2; i++) { for (int j = 0; j < 2; j++) { s.push_back(point(i, j)); } }
+			//s.mode = glLineStrip;
+			//s.color = fcolor(255,255,255);
 			button_body = body;
+			//button_body.push_back(s);
+			//DP: Commented attempt above
 			button_location = location;
 			button_scale = scale;
 			for (edex e = 0; e < 4; ++e) {
@@ -119,7 +125,7 @@ namespace fgr {
 		menu(const std::string& bodypath, point location, point scale, int buttonc, menu* buttonv, void (*choosefunc)(edex) = nullptr) : menu(){
 			graphicFromFile(menu_body, bodypath);
 			focused = true;
-			expanded = true; //DELETE THIS LINE LATER
+			expanded = true; //TODO: DELETE THIS LINE LATER
 			is_menu = true;
 			child_activation_function = choosefunc;
 			menu_scale = scale;
@@ -201,7 +207,8 @@ namespace fgr {
 			glPopMatrix();
 		}
 		//Next draw its menu form IF it has one and is expanded
-		if(true){//if (obj.is_menu && (obj.expanded || !obj.nest) && (obj.draw_if_unfocused || obj.focused)) {
+		//if(true){//DP: Testing purposes
+		if (obj.is_menu && (obj.expanded || !obj.nest) && (obj.draw_if_unfocused || obj.focused)) {
 			glPushMatrix();
 				glTranslatePoint(obj.menu_location);
 				glScalePoint(obj.menu_scale);

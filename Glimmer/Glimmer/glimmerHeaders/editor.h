@@ -199,6 +199,10 @@ void switchTool(int toTool) {
 	return;
 }
 
+void butCallBack() {
+	std::cout << "BUTTON WORKS!" << std::endl;
+}
+
 //Think of these like tabs
 class editor {
 public:
@@ -286,7 +290,11 @@ public:
 	//Trying to get this feature working
 	fgr::menu eee[4] = { fgr::menu(), fgr::menu(), fgr::menu(), fgr::menu() };
 	// MENU REPRESENTATION
-	fgr::menu toolsMenu;
+	int adjnums[4] = { 0,0,0,0 };
+	int* NUMS = adjnums;
+
+
+	fgr::menu toolsMenu = fgr::menu(fgr::graphic(), fgr::point(2, 2), fgr::point(1, 1), NUMS, &butCallBack);
 
 	//Recursively destroy the future
 	void destroyFuture() {
@@ -1277,9 +1285,10 @@ void drawEditor(const editor& workbench) {
 			glutBitmapCharacter(fontNum, c);
 	}
 	//Draw the Menus
-	if (workbench.eee) {
-		draw(workbench.eee[0]);
-	}
+	//if (workbench.eee) {
+	//	draw(workbench.eee[0]);
+	//}
+	//DP: Supposed to draw eee
 	//Draw the central editor
 	if (true) {
 		glPushMatrix();
@@ -1299,6 +1308,8 @@ void drawEditor(const editor& workbench) {
 				glutBitmapCharacter(fontNum, c);
 		glPopMatrix();
 	}
+	//draw(workbench.toolsMenu);
+	//DP: drawing the workbench
 }
 
 
