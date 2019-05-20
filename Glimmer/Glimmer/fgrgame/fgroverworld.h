@@ -43,11 +43,12 @@ namespace fgr {
 			//Identical to the filepath this was loaded from
 			std::string name;
 			//The image representing the background
-			fgr::graphic backround;
+			fgr::game::multisprite background;
 			//The portals from this room to other rooms, and which room they go to
 			std::vector<door> gateways;
 			//How far from the player's location we have found this room to be
 			unsigned short traversalDistance;
+
 			// FUNCTIONS
 			//CONSTRUCTORS
 			//Default constructor

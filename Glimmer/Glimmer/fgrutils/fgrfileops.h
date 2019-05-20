@@ -222,6 +222,95 @@ namespace fgr {
 	}
 
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//		COMPONENT BINARY STRUCTURE
+	//
+	//	| ANIMATION | POINT POSITION | FLOAT ROTATION | FLOAT SCALE | POINT POSFREQ | FLOAT ROTFREQ | FLOAT SCALEFREQ | POINT POSAMP | FLOAT SCALEAMP |
+	//
+
+	//Get a painting component from a file stream
+	component fgetcomponent(FILE*& stream) {
+		//Read in the animation
+		animation image = fgetanimation(stream);
+		//We'll return this
+		component reti(image);
+		//Read in the position
+		reti.position = fgetpoint(stream);
+		//Read in the rotation
+		fread(&reti.rotation, sizeof(float), 1, stream);
+		//Read in the scale
+		fread(&reti.scale, sizeof(float), 1, stream);
+		//Read in the positional frequency
+		reti.posfreq = fgetpoint(stream);
+		//Read in the rotational frequency
+		fread(&reti.rotfreq, sizeof(float), 1, stream);
+		//Read in the scaling frequency
+		fread(&reti.scalefreq, sizeof(float), 1, stream);
+		//Read in the positional amplitude
+		reti.posamp = fgetpoint(stream);
+		//Read in the scaling amplitude
+		fread(&reti.scaleamp, sizeof(float), 1, stream);
+		return reti;
+	}
+
+	//Put a painting component into a file stream
+	void fputcomponent(const component& obj, FILE*& stream) {
+		//Write in the animation
+		fputanimation(obj, stream);
+		//Write in the position
+		fputpoint(obj.position, stream);
+		//Write in the rotation
+		fwrite(&obj.rotation, sizeof(float), 1, stream);
+		//Write in the scale
+		fwrite(&obj.scale, sizeof(float), 1, stream);
+		//Write in the positional frequency
+		fputpoint(obj.posfreq, stream);
+		//Write in the rotational frequency
+		fwrite(&obj.rotfreq, sizeof(float), 1, stream);
+		//Write in the scaling frequency
+		fwrite(&obj.scalefreq, sizeof(float), 1, stream);
+		//Write in positional amplitude
+		fputpoint(obj.posamp, stream);
+		//Write in scaling amplitude
+		fwrite(&obj.scaleamp, sizeof(float), 1, stream);
+		return;
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//		PAINTING BINARY STRUCTURE
+	//
+	//	| STD::SIZE_T COMPC | <COMPONENTS> |
+	//
+
+	//Get a painting from a file stream
+	painting fgetpainting(FILE*& stream) {
+		//We'll return this
+		painting retp;
+		//Read in the number of components
+		std::size_t COMPC;
+		fread(&COMPC, sizeof(std::size_t), 1, stream);
+		//Read in every component
+		retp.resize(COMPC);
+		for (std::size_t i = 0; i < COMPC; ++i) {
+			retp[i] = fgetcomponent(stream);
+		}
+		return retp;
+	}
+
+	//Put a painting into a file stream
+	void fputpainting(const painting& obj, FILE*& stream) {
+		std::size_t COMPC = obj.size();
+		//Write in the number of components
+		fwrite(&COMPC, sizeof(std::size_t), 1, stream);
+		//Write in every component
+		for (painting::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
+			fputcomponent(*itr, stream);
+		}
+		return;
+	}
+	
+
 	///////////////////// SLIGHTLY MORE USER-FRIENDLY FILE READING/WRITING FUNCITONS //////////////////////////
 
 	//Reads a glyph out of the specified path and assigns it to the glyph refrence passed in
@@ -300,6 +389,26 @@ namespace fgr {
 		fopen_s(&fgrfile, path.c_str(), "wb");
 		if (!fgrfile) return false;
 		fputanimation(art, fgrfile);
+		fclose(fgrfile);
+		return true;
+	}
+
+	//Reads a painting out of the specified path and assigns it to the painting refrence passed in
+	bool paintingFromFile(painting& art, const std::string& path) {
+		FILE* fgrfile;
+		fopen_s(&fgrfile, path.c_str(), "wb");
+		if (!fgrfile) return false;
+		art = fgetpainting(fgrfile);
+		fclose(fgrfile);
+		return true;
+	}
+
+	//Writes a painting object to a particular file path
+	bool paintingToFile(const painting& art, const std::string& path) {
+		FILE* fgrfile;
+		fopen_s(&fgrfile, path.c_str(), "wb");
+		if (!fgrfile) return false;
+		fputpainting(art, fgrfile);
 		fclose(fgrfile);
 		return true;
 	}

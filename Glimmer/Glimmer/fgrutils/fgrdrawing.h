@@ -330,6 +330,22 @@ namespace  fgr {
 		draw(obj.feed());
 	}
 
+	//Use openGL to render a painting component at the current frame
+	void draw(const fgr::component& obj) {
+		glPushMatrix();
+			glTranslatePoint(obj.position);
+			glRotatef(obj.rotation / PI * 180.0f, 0.0f, 0.0f, 1.0f);
+			glScalef(obj.scale, obj.scale, obj.scale);
+		glPopMatrix();
+	}
+
+	//Use openGL to render a painting at the current frames
+	void draw(const fgr::painting& obj) {
+		for (painting::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
+			draw(*itr);
+		}
+	}
+
 	//Use openGL to render the current form of a spritesheet
 	void draw(const fgr::spritesheet& obj) {
 
@@ -339,7 +355,7 @@ namespace  fgr {
 	void fractalTransform(const fgr::fractal_mantle& instructions) {
 		glTranslatePoint(instructions.location);
 		glScalef(instructions.scale, instructions.scale, instructions.scale);
-		glRotatef(instructions.rotation / PI * 180, 0.0f, 0.0f, 1.0f);
+		glRotatef(instructions.rotation / PI * 180.0f, 0.0f, 0.0f, 1.0f);
 	}
 	
 	//Use openGL to render a fractal

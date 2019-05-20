@@ -23,12 +23,13 @@ namespace fgr {
 		glBezier
 	};
 
-	//Forward=declarations
+	//Forward-declarations
 	class glyph;
 	class shape;
 	class graphic;
 	class frame;
 	class animation;
+	class painting;
 	class spritesheet;
 	//Container typedefs
 	typedef std::list<point> glyphContainer;
@@ -556,6 +557,110 @@ namespace fgr {
 				itr->applyToAll(transformFunc);
 			}
 		}
+	};
+
+	//A moving part of an image
+	class component : public animation {
+	public:
+		//Position versus the image its on
+		point position;
+		//Rotation after translation
+		float rotation;
+		//Scaling after translation
+		float scale;
+		//Horizontal and vertical oscillation angular frequency
+		point posfreq;
+		//Rotation angular frequency
+		float rotfreq;
+		//Scaling oscillation angular frequency
+		float scalefreq;
+		//Positional osciallation amplitude
+		point posamp;
+		//Scaling oscillatllaiton amplitude
+		float scaleamp;
+		
+		//CONSTRUCTORS
+		//Default constructor
+		component() : animation() {
+			rotation = 0.0f;
+			scale = 1.0f;
+			rotfreq = 0.0f;
+			scalefreq = 0.0f;
+			scaleamp = 0.0f;
+		}
+		//Construct from animation
+		component(const fgr::animation& anim) : animation(anim) {
+			rotation = 0.0f;
+			scale = 1.0f;
+			rotfreq = 0.0f;
+			scalefreq = 0.0f;
+			scaleamp = 0.0f;
+		}
+	};
+
+	//An image with many moving parts (extention is .fpg)
+	class painting : public std::vector<component> {
+	public:
+		//The framerate expected when this animation plays
+		float framerate;
+		//CONSTRUCTORS
+		//Default constructor
+		painting() : std::vector<component>() {
+
+		}
+		//Construct from vector of components
+		painting(std::vector<component> pieces) : std::vector<component>(pieces) {
+
+		}
+		//Apply a function to every component in the painting
+		void applyToAll(void(*transformFunc)(component&)) {
+			for (iterator itr = begin(); itr != end(); ++itr) {
+				transformFunc(*itr);
+			}
+		}
+		//Apply a function to every frame in every component in the painting
+		void applyToAll(void(*transformFunc)(frame&)) {
+			for (iterator itr = begin(); itr != end(); ++itr) {
+				itr->applyToAll(transformFunc);
+			}
+		}
+		//Apply a function to every shape in every frame in every component in the painting
+		void applyToAll(void(*transformFunc)(shape&)) {
+			for (iterator itr = begin(); itr != end(); ++itr) {
+				itr->applyToAll(transformFunc);
+			}
+		}
+		//Apply a function to every point in every shape in every frame in every component in the painting
+		void applyToAll(void(*transformFunc)(point&)) {
+			for (iterator itr = begin(); itr != end(); ++itr) {
+				itr->applyToAll(transformFunc);
+			}
+		}
+		//Apply a function to every component in the painting (const-qualified)
+		void applyToAll(void(*transformFunc)(const component&)) const {
+			for (const_iterator itr = begin(); itr != end(); ++itr) {
+				transformFunc(*itr);
+			}
+		}
+		//Apply a function to every frame in every component in the painting (const-qualified)
+		void applyToAll(void(*transformFunc)(const frame&)) const {
+			for (const_iterator itr = begin(); itr != end(); ++itr) {
+				itr->applyToAll(transformFunc);
+			}
+		}
+		//Apply a function to every shape in every frame in every component in the painting (const-qualified)
+		void applyToAll(void(*transformFunc)(const shape&)) const {
+			for (const_iterator itr = begin(); itr != end(); ++itr) {
+				itr->applyToAll(transformFunc);
+			}
+		}
+		//Apply a function to every point in every shape in every frame in every component in the painting (const-qualified)
+		void applyToAll(void(*transformFunc)(const point&)) const {
+			for (const_iterator itr = begin(); itr != end(); ++itr) {
+				itr->applyToAll(transformFunc);
+			}
+		}
+
 	};
 
 	typedef std::string spriteIndex;

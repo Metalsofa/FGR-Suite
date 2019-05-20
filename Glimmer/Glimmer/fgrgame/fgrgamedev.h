@@ -4,6 +4,8 @@
 #ifndef __FGR_GAME_DEV_H__
 #define __FGR_GAME_DEV_H__
 
+#include "fgrgamegraphics.h"
+#include "fgrgamedevfileops.h"
 #include "fgroverworld.h"
 
 #endif
