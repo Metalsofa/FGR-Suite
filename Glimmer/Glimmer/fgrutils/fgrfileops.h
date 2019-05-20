@@ -28,6 +28,7 @@ namespace fgr {
 		//This is the point that will be returned
 		float buffer[2] = { obj.x(), obj.y() };
 		fwrite(buffer, sizeof(float), 2, stream);
+		return;
 	}
 
 

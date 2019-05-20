@@ -306,6 +306,20 @@ namespace  fgr {
 		return reti;
 	}
 
+	//Compile an animation object, get back <start, size> of GLlist array
+	std::pair<GLuint, GLsizei> compile(const fgr::animation& obj) {
+		std::pair<GLuint, GLsizei> retp;
+		retp.second = obj.size();
+		retp.first = glGenLists(obj.size());
+		fgr::animation::const_iterator itr = obj.begin();
+		for (unsigned int i = 0; i < retp.second; ++i, ++itr) {
+			glNewList(retp.first + i, GL_COMPILE);
+			draw(*itr);
+			glEndList();
+		}
+		return retp;
+	}
+
 	//Use openGL to render an animation at the correct frame
 	void draw(const fgr::animation& obj) {
 		draw(*(obj.currentframe));

@@ -37,6 +37,9 @@
     <Filter Include="scrap code">
       <UniqueIdentifier>{6744005a-b1ce-4197-9ad0-8b410ccc8895}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\fgr game dev utilities">
+      <UniqueIdentifier>{8f50c901-76a9-4029-8125-e0ae13236e19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -97,6 +100,18 @@
     </ClInclude>
     <ClInclude Include="fgrutils\fgrmenu.h">
       <Filter>Header Files\fgr utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrgame\fgroverworld.h">
+      <Filter>Header Files\fgr game dev utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrgame\fgrgamedev.h">
+      <Filter>Header Files\fgr game dev utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrgame\fgrgamedevfileops.h">
+      <Filter>Header Files\fgr game dev utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="fgrgame\fgrgamegraphics.h">
+      <Filter>Header Files\fgr game dev utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
