@@ -306,6 +306,20 @@ namespace  fgr {
 		return reti;
 	}
 
+	//Compile an animation object, get back <start, size> of GLlist array
+	std::pair<GLuint, GLsizei> compile(const fgr::animation& obj) {
+		std::pair<GLuint, GLsizei> retp;
+		retp.second = obj.size();
+		retp.first = glGenLists(obj.size());
+		fgr::animation::const_iterator itr = obj.begin();
+		for (unsigned int i = 0; i < retp.second; ++i, ++itr) {
+			glNewList(retp.first + i, GL_COMPILE);
+			draw(*itr);
+			glEndList();
+		}
+		return retp;
+	}
+
 	//Use openGL to render an animation at the correct frame
 	void draw(const fgr::animation& obj) {
 		draw(*(obj.currentframe));
@@ -314,6 +328,22 @@ namespace  fgr {
 	//Use openGL to render an animation at the correct frame, and advance it
 	void animate(fgr::animation& obj) {
 		draw(obj.feed());
+	}
+
+	//Use openGL to render a painting component at the current frame
+	void draw(const fgr::component& obj) {
+		glPushMatrix();
+			glTranslatePoint(obj.position);
+			glRotatef(obj.rotation / PI * 180.0f, 0.0f, 0.0f, 1.0f);
+			glScalef(obj.scale, obj.scale, obj.scale);
+		glPopMatrix();
+	}
+
+	//Use openGL to render a painting at the current frames
+	void draw(const fgr::painting& obj) {
+		for (painting::const_iterator itr = obj.begin(); itr != obj.end(); ++itr) {
+			draw(*itr);
+		}
 	}
 
 	//Use openGL to render the current form of a spritesheet
@@ -325,7 +355,7 @@ namespace  fgr {
 	void fractalTransform(const fgr::fractal_mantle& instructions) {
 		glTranslatePoint(instructions.location);
 		glScalef(instructions.scale, instructions.scale, instructions.scale);
-		glRotatef(instructions.rotation / PI * 180, 0.0f, 0.0f, 1.0f);
+		glRotatef(instructions.rotation / PI * 180.0f, 0.0f, 0.0f, 1.0f);
 	}
 	
 	//Use openGL to render a fractal

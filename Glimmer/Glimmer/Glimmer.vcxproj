@@ -164,6 +164,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="fgrgame\fgrgamedev.h" />
+    <ClInclude Include="fgrgame\fgrgamedevfileops.h" />
+    <ClInclude Include="fgrgame\fgrgamegraphics.h" />
+    <ClInclude Include="fgrgame\fgroverworld.h" />
     <ClInclude Include="fgrutils\fgrcolor.h" />
     <ClInclude Include="fgrutils\fgrdrawing.h" />
     <ClInclude Include="fgrutils\fgrfileops.h" />
