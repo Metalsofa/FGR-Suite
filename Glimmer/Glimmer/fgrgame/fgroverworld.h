@@ -49,6 +49,8 @@ namespace fgr {
 			//How far from the player's location we have found this room to be
 			unsigned short traversalDistance;
 
+			//DP: Shouldn't the room have some props in it?
+
 			// FUNCTIONS
 			//CONSTRUCTORS
 			//Default constructor
@@ -82,9 +84,9 @@ namespace fgr {
 		public:
 			// REPERSENTATION
 			//The rooms are kept in this array
-			room rooms[max_rooms];
+			room rooms[max_rooms];	//DP: Make this a vector
 			//The 'current' room
-			room* currentRoom;
+			room* currentRoom;		//DP: Make this an int for the index in thevector
 			//How far from a room we are willing to be before despawning it automatically.
 			unsigned short maxdistance;
 			// FUNCTIONS
@@ -92,7 +94,7 @@ namespace fgr {
 				//Driver funciton
 			void setDistances();
 				//For recursive use
-			void setDistances(room* travis, unsigned short dist);
+			void setDistances(room* travis, unsigned short dist);	//DP: I have a good algorithm for you to use(pagerank) similar to one that we used for our datastructures homework on priority queues
 			//Load a room file into the room array automatically
 			room* loadroom(const std::string& filepath);
 			//Finds space in the room array for a new room to be put in there
